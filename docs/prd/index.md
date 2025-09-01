@@ -15,3 +15,25 @@
   - [Open Questions & Dependencies](./open-questions-dependencies.md)
     - [Open Questions](./open-questions-dependencies.md#open-questions)
     - [Dependencies](./open-questions-dependencies.md#dependencies)
+
+## Development Epics
+
+### [Epic 1: Authentication & Foundation](./epic-1-authentication-foundation.md)
+**Status:** In Progress (Story 1.1 ✅ Done)  
+**Priority:** High (Foundation)  
+Secure authentication, professional user profiles, and security foundation for therapy practice data management.
+
+### [Epic 2: Client Management System](./epic-2-client-management.md)  
+**Status:** Planning  
+**Priority:** High (Core MVP Feature)  
+Comprehensive client profile creation, therapy session history tracking, and efficient client data organization.
+
+### [Epic 3: Therapy Planning & Tracking](./epic-3-therapy-planning-tracking.md)  
+**Status:** Planning  
+**Priority:** High (Core Differentiator)  
+Marma points database, interactive 2D/3D visualizations, therapy schools integration, and session planning tools.
+
+### [Epic 4: Intake Questionnaire System](./epic-4-intake-questionnaire.md)  
+**Status:** Planning  
+**Priority:** Medium (Practice Enhancement)  
+Digital intake forms with external service integration, client completion experience, and automatic profile integration.

@@ -1,0 +1,61 @@
+schema: 1
+story: '1.2'
+story_title: 'Therapist Profile & Settings Management'
+gate: CONCERNS
+status_reason: 'Story is well-designed but not yet implemented. MVP scope needs refinement and database schema validation required before development starts.'
+reviewer: 'Quinn (Test Architect)'
+updated: '2025-09-01T17:43:00Z'
+
+top_issues:
+  - severity: medium
+    issue: 'No implementation exists yet - story is in Draft status'
+    refs: ['docs/stories/1.2.therapist-profile-settings.md']
+    suggested_owner: 'dev'
+  - severity: medium
+    issue: 'Database schema not implemented - therapists table missing'
+    refs: ['docs/architecture/4-backend-database-supabase.md']
+    suggested_owner: 'dev'
+  - severity: low
+    issue: 'MVP scope could be streamlined for faster delivery'
+    refs: ['docs/stories/1.2.therapist-profile-settings.md:60-105']
+    suggested_owner: 'po'
+
+waiver: { active: false }
+
+quality_score: 80
+expires: '2025-09-15T17:43:00Z'
+
+evidence:
+  tests_reviewed: 0
+  risks_identified: 3
+  trace:
+    ac_covered: []
+    ac_gaps: [1, 2, 3, 4, 5, 6, 7, 8]
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: 'Excellent security design with RLS policies and auth integration planned'
+  performance:
+    status: PASS
+    notes: 'Good caching strategy with TanStack Query and optimistic updates planned'
+  reliability:
+    status: PASS
+    notes: 'Robust error handling patterns established in Story 1.1 to be extended'
+  maintainability:
+    status: PASS
+    notes: 'Follows established patterns and conventions from Story 1.1'
+
+recommendations:
+  immediate:
+    - action: 'Create minimal therapists table with basic profile fields for MVP'
+      refs: ['docs/architecture/4-backend-database-supabase.md']
+    - action: 'Simplify AC scope - focus on name, credentials, and basic settings only'
+      refs: ['docs/stories/1.2.therapist-profile-settings.md:10-18']
+    - action: 'Implement database schema first before starting frontend development'
+      refs: ['docs/stories/1.2.therapist-profile-settings.md:141-147']
+  future:
+    - action: 'Consider splitting complex settings into separate story'
+      refs: ['docs/stories/1.2.therapist-profile-settings.md:173-187']
+    - action: 'Add professional presentation features post-MVP'
+      refs: ['docs/stories/1.2.therapist-profile-settings.md:222-227']
