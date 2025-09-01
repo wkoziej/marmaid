@@ -1,9 +1,33 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './features/auth/auth-context'
 import { AuthGuard } from './lib/auth-guard'
 import { AuthPage } from './app/pages/auth-page'
 import { Dashboard } from './app/pages/dashboard'
 import { ErrorBoundary } from './components/error-boundary'
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors (except 408 Request Timeout)
+        if (error && typeof error === 'object' && 'status' in error) {
+          const status = error.status as number
+          if (status >= 400 && status < 500 && status !== 408) {
+            return false
+          }
+        }
+        return failureCount < 3
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+    mutations: {
+      retry: false, // Don't retry mutations by default
+    },
+  },
+})
 
 function AppRoutes() {
   const { user, loading } = useAuth()
@@ -44,11 +68,13 @@ function AppRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AuthProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   )
 }
