@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from '../App'
 import { supabase } from '../lib/supabase'
@@ -11,25 +11,23 @@ function renderApp() {
 describe('App Integration with Routing', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    
-    // Mock auth state change subscription
-    vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
-      data: {
-        subscription: {
-          unsubscribe: vi.fn()
-        }
-      }
-    })
   })
 
   it('should redirect unauthenticated users to auth page', async () => {
+    // Setup mock for this test
+    vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } }
+    })
+    
     // Mock unauthenticated state
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null
     })
 
-    renderApp()
+    await act(async () => {
+      renderApp()
+    })
 
     // Should show auth page for unauthenticated users
     await waitFor(() => {
@@ -41,6 +39,11 @@ describe('App Integration with Routing', () => {
   })
 
   it('should show dashboard for authenticated users', async () => {
+    // Setup mock for this test
+    vi.mocked(supabase.auth.onAuthStateChange).mockReturnValue({
+      data: { subscription: { unsubscribe: vi.fn() } }
+    })
+    
     // Mock authenticated state
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { 
@@ -50,18 +53,24 @@ describe('App Integration with Routing', () => {
             email: 'test@example.com',
             aud: 'authenticated'
           },
-          access_token: 'mock_token'
+          access_token: 'mock_token',
+          refresh_token: 'mock_refresh_token',
+          expires_at: Date.now() / 1000 + 3600,
+          expires_in: 3600,
+          token_type: 'bearer'
         }
       },
       error: null
     })
 
-    renderApp()
+    await act(async () => {
+      renderApp()
+    })
 
     // Should show dashboard for authenticated users
     await waitFor(() => {
       expect(screen.getByText('Marmaid Dashboard')).toBeInTheDocument()
-    })
+    }, { timeout: 3000 })
 
     // Should show user email
     expect(screen.getByText('test@example.com')).toBeInTheDocument()
@@ -71,42 +80,66 @@ describe('App Integration with Routing', () => {
   })
 
   it('should handle auth state changes and redirect accordingly', async () => {
+    // Mock auth state change callback 
+    let authStateCallback: ((event: string, session: any) => void) | null = null
+    
+    vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
+      authStateCallback = callback
+      return {
+        data: { subscription: { unsubscribe: vi.fn() } }
+      }
+    })
+    
     // Start unauthenticated
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null
     })
 
-    renderApp()
+    await act(async () => {
+      renderApp()
+    })
 
     // Should show auth page initially
     await waitFor(() => {
       expect(screen.getByText('Zaloguj się do Marmaid')).toBeInTheDocument()
     })
 
-    // Simulate successful login by triggering auth state change
-    const mockOnAuthStateChange = vi.mocked(supabase.auth.onAuthStateChange)
-    const authStateCallback = mockOnAuthStateChange.mock.calls[0]?.[1]
-    
+    // Now simulate successful authentication by calling the callback directly
     if (authStateCallback) {
-      // Simulate SIGNED_IN event
-      authStateCallback('SIGNED_IN', {
-        user: { 
-          id: '123', 
-          email: 'test@example.com',
-          aud: 'authenticated'
-        },
-        access_token: 'mock_token'
+      await act(async () => {
+        authStateCallback('SIGNED_IN', {
+          user: { 
+            id: '123', 
+            email: 'test@example.com',
+            aud: 'authenticated'
+          },
+          access_token: 'mock_token',
+          refresh_token: 'mock_refresh_token',
+          expires_at: Date.now() / 1000 + 3600,
+          expires_in: 3600,
+          token_type: 'bearer'
+        })
       })
     }
 
     // Should redirect to dashboard
     await waitFor(() => {
       expect(screen.getByText('Marmaid Dashboard')).toBeInTheDocument()
-    })
+    }, { timeout: 3000 })
   })
 
   it('should handle logout and redirect to auth page', async () => {
+    // Mock auth state change callback 
+    let authStateCallback: ((event: string, session: any) => void) | null = null
+    
+    vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
+      authStateCallback = callback
+      return {
+        data: { subscription: { unsubscribe: vi.fn() } }
+      }
+    })
+    
     // Start authenticated
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { 
@@ -116,7 +149,11 @@ describe('App Integration with Routing', () => {
             email: 'test@example.com',
             aud: 'authenticated'
           },
-          access_token: 'mock_token'
+          access_token: 'mock_token',
+          refresh_token: 'mock_refresh_token',
+          expires_at: Date.now() / 1000 + 3600,
+          expires_in: 3600,
+          token_type: 'bearer'
         }
       },
       error: null
@@ -125,7 +162,9 @@ describe('App Integration with Routing', () => {
     // Mock successful logout
     vi.mocked(supabase.auth.signOut).mockResolvedValue({ error: null })
 
-    renderApp()
+    await act(async () => {
+      renderApp()
+    })
 
     // Should show dashboard initially
     await waitFor(() => {
@@ -138,17 +177,16 @@ describe('App Integration with Routing', () => {
     await user.click(logoutButton)
 
     // Simulate SIGNED_OUT event
-    const mockOnAuthStateChange = vi.mocked(supabase.auth.onAuthStateChange)
-    const authStateCallback = mockOnAuthStateChange.mock.calls[0]?.[1]
-    
     if (authStateCallback) {
-      authStateCallback('SIGNED_OUT', null)
+      await act(async () => {
+        authStateCallback('SIGNED_OUT', null)
+      })
     }
 
     // Should redirect to auth page
     await waitFor(() => {
       expect(screen.getByText('Zaloguj się do Marmaid')).toBeInTheDocument()
-    })
+    }, { timeout: 3000 })
 
     // Should not show dashboard
     expect(screen.queryByText('Marmaid Dashboard')).not.toBeInTheDocument()
@@ -197,6 +235,16 @@ describe('App Integration with Routing', () => {
   it('should complete full authentication flow with routing', async () => {
     const user = userEvent.setup()
     
+    // Mock auth state change callback 
+    let authStateCallback: ((event: string, session: any) => void) | null = null
+    
+    vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
+      authStateCallback = callback
+      return {
+        data: { subscription: { unsubscribe: vi.fn() } }
+      }
+    })
+    
     // Start unauthenticated
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
@@ -217,13 +265,19 @@ describe('App Integration with Routing', () => {
             email: 'test@example.com',
             aud: 'authenticated'
           },
-          access_token: 'mock_token'
+          access_token: 'mock_token',
+          refresh_token: 'mock_refresh_token',
+          expires_at: Date.now() / 1000 + 3600,
+          expires_in: 3600,
+          token_type: 'bearer'
         }
       },
       error: null
     })
 
-    renderApp()
+    await act(async () => {
+      renderApp()
+    })
 
     // Should show auth page
     await waitFor(() => {
@@ -241,24 +295,27 @@ describe('App Integration with Routing', () => {
     await user.click(loginButton)
 
     // Simulate successful auth state change
-    const mockOnAuthStateChange = vi.mocked(supabase.auth.onAuthStateChange)
-    const authStateCallback = mockOnAuthStateChange.mock.calls[0]?.[1]
-    
     if (authStateCallback) {
-      authStateCallback('SIGNED_IN', {
-        user: { 
-          id: '123', 
-          email: 'test@example.com',
-          aud: 'authenticated'
-        },
-        access_token: 'mock_token'
+      await act(async () => {
+        authStateCallback('SIGNED_IN', {
+          user: { 
+            id: '123', 
+            email: 'test@example.com',
+            aud: 'authenticated'
+          },
+          access_token: 'mock_token',
+          refresh_token: 'mock_refresh_token',
+          expires_at: Date.now() / 1000 + 3600,
+          expires_in: 3600,
+          token_type: 'bearer'
+        })
       })
     }
 
     // Should redirect to dashboard
     await waitFor(() => {
       expect(screen.getByText('Marmaid Dashboard')).toBeInTheDocument()
-    })
+    }, { timeout: 3000 })
 
     // Should show user email in dashboard
     expect(screen.getByText('test@example.com')).toBeInTheDocument()

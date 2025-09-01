@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, act } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { AuthProvider } from './auth-context'
 import { useAuth } from './use-auth'
 import { supabase } from '../../lib/supabase'
@@ -23,23 +24,32 @@ describe('AuthContext', () => {
     vi.clearAllMocks()
   })
 
-  it('should provide auth context to children', () => {
+  it('should provide auth context to children', async () => {
     // Mock initial session
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null
     })
 
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
+    await act(async () => {
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+    })
+
+    // Wait for loading to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('loaded')
+    })
 
     expect(screen.getByTestId('user')).toHaveTextContent('unauthenticated')
   })
 
   it('should handle successful sign in', async () => {
+    const user = userEvent.setup()
+    
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null
@@ -50,11 +60,13 @@ describe('AuthContext', () => {
       error: null
     })
 
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
+    await act(async () => {
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+    })
 
     // Wait for initial loading to complete
     await waitFor(() => {
@@ -63,7 +75,9 @@ describe('AuthContext', () => {
 
     // Click sign in
     const signInButton = screen.getByText('Sign In')
-    signInButton.click()
+    await act(async () => {
+      await user.click(signInButton)
+    })
 
     await waitFor(() => {
       expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
@@ -74,6 +88,8 @@ describe('AuthContext', () => {
   })
 
   it('should handle sign up', async () => {
+    const user = userEvent.setup()
+    
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null
@@ -84,18 +100,22 @@ describe('AuthContext', () => {
       error: null
     })
 
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
+    await act(async () => {
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+    })
 
     await waitFor(() => {
       expect(screen.getByTestId('loading')).toHaveTextContent('loaded')
     })
 
     const signUpButton = screen.getByText('Sign Up')
-    signUpButton.click()
+    await act(async () => {
+      await user.click(signUpButton)
+    })
 
     await waitFor(() => {
       expect(supabase.auth.signUp).toHaveBeenCalledWith({
@@ -106,6 +126,8 @@ describe('AuthContext', () => {
   })
 
   it('should handle sign out', async () => {
+    const user = userEvent.setup()
+    
     vi.mocked(supabase.auth.getSession).mockResolvedValue({
       data: { session: null },
       error: null
@@ -115,18 +137,22 @@ describe('AuthContext', () => {
       error: null
     })
 
-    render(
-      <AuthProvider>
-        <TestComponent />
-      </AuthProvider>
-    )
+    await act(async () => {
+      render(
+        <AuthProvider>
+          <TestComponent />
+        </AuthProvider>
+      )
+    })
 
     await waitFor(() => {
       expect(screen.getByTestId('loading')).toHaveTextContent('loaded')
     })
 
     const signOutButton = screen.getByText('Sign Out')
-    signOutButton.click()
+    await act(async () => {
+      await user.click(signOutButton)
+    })
 
     await waitFor(() => {
       expect(supabase.auth.signOut).toHaveBeenCalled()
