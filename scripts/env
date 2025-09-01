@@ -1,0 +1,107 @@
+#!/bin/bash
+# ABOUTME: Environment management CLI for Marmaid project
+# ABOUTME: Provides commands for switching environments and running migrations
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+show_help() {
+    echo "🏥 Marmaid Environment Management CLI"
+    echo ""
+    echo "Usage: ./scripts/env <command>"
+    echo ""
+    echo "Environment Commands:"
+    echo "  use test        Switch frontend to test environment"
+    echo "  use prod        Switch frontend to production environment" 
+    echo "  use local       Switch frontend to local development environment"
+    echo ""
+    echo "Database Commands:"
+    echo "  link test       Link Supabase CLI to test project"
+    echo "  link prod       Link Supabase CLI to production project"
+    echo "  migrate         Create new migration file"
+    echo "  push test       Push migrations to test database"
+    echo "  push prod       Push migrations to production database"
+    echo ""
+    echo "Testing Commands:"
+    echo "  test            Test environment connectivity and isolation"
+    echo "  status          Show current environment status"
+    echo ""
+    echo "Examples:"
+    echo "  ./scripts/env use test     # Switch to test environment"
+    echo "  ./scripts/env migrate      # Create new migration"
+    echo "  ./scripts/env push test    # Deploy to test database"
+}
+
+show_status() {
+    echo "📊 Current Environment Status"
+    echo ""
+    
+    if [ -f "frontend/.env.local" ]; then
+        LOCAL_URL=$(grep "^VITE_SUPABASE_URL=" frontend/.env.local | cut -d'=' -f2 2>/dev/null || echo "Not found")
+        echo "Frontend Environment: $LOCAL_URL"
+        
+        if [[ "$LOCAL_URL" == *"127.0.0.1"* ]]; then
+            echo "  🏠 Mode: Local Development"
+        elif [[ "$LOCAL_URL" == *"myxicttnpflkwnofbhci"* ]]; then
+            echo "  🧪 Mode: Test Environment"
+        elif [[ "$LOCAL_URL" == *"aajurxtbngbixsdptfzz"* ]]; then
+            echo "  🚀 Mode: Production Environment"
+        else
+            echo "  ❓ Mode: Unknown"
+        fi
+    else
+        echo "Frontend Environment: Not configured"
+        echo "  Run './scripts/env use [test|prod|local]' to configure"
+    fi
+    
+    echo ""
+    echo "Available commands: './scripts/env help'"
+}
+
+case "${1:-}" in
+    "use")
+        case "${2:-}" in
+            "test") "$SCRIPT_DIR/use-test.sh" ;;
+            "prod") "$SCRIPT_DIR/use-production.sh" ;;
+            "local") "$SCRIPT_DIR/use-local.sh" ;;
+            *) echo "❌ Usage: ./scripts/env use [test|prod|local]" ;;
+        esac
+        ;;
+    "link")
+        case "${2:-}" in
+            "test") "$SCRIPT_DIR/link-test.sh" ;;
+            "prod") "$SCRIPT_DIR/link-production.sh" ;;
+            *) echo "❌ Usage: ./scripts/env link [test|prod]" ;;
+        esac
+        ;;
+    "migrate")
+        if [ -z "${2:-}" ]; then
+            echo "❌ Usage: ./scripts/env migrate <migration_name>"
+            exit 1
+        fi
+        npx supabase migration new "$2"
+        ;;
+    "push")
+        case "${2:-}" in
+            "test") 
+                DB_PASS=$(grep "^DB_PASS=" frontend/.env.test | cut -d'=' -f2)
+                npx supabase db push --password "$DB_PASS"
+                ;;
+            "prod")
+                read -s -p "Enter PRODUCTION database password: " PROD_PASS
+                echo ""
+                npx supabase db push --password "$PROD_PASS"
+                ;;
+            *) echo "❌ Usage: ./scripts/env push [test|prod]" ;;
+        esac
+        ;;
+    "test") "$SCRIPT_DIR/test-environments.sh" ;;
+    "status") show_status ;;
+    "help"|"--help"|"-h"|"") show_help ;;
+    *) 
+        echo "❌ Unknown command: $1"
+        echo "Run './scripts/env help' for usage information"
+        exit 1
+        ;;
+esac
