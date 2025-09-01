@@ -37,3 +37,8 @@ Marma points database, interactive 2D/3D visualizations, therapy schools integra
 **Status:** Planning  
 **Priority:** Medium (Practice Enhancement)  
 Digital intake forms with external service integration, client completion experience, and automatic profile integration.
+
+### [Epic 5: Deployment & Infrastructure](./epic-5-deployment-infrastructure.md)  
+**Status:** Planning  
+**Priority:** High (Foundation Infrastructure)  
+Robust deployment pipelines, test/production environments, CI/CD automation, security hardening, and operational monitoring for reliable service delivery.
