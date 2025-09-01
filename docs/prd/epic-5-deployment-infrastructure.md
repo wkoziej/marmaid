@@ -20,7 +20,7 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
 
 **Success Criteria:**
 - Test environment enables continuous validation of new features
-- Production environment delivers reliable, secure service to therapists  
+- Production environment delivers reliable, secure service to therapists
 - CI/CD pipeline automates deployment with quality gates and safety measures
 - Environment management CLI streamlines development workflow
 - Database migrations execute safely across all environments
@@ -38,7 +38,7 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
   - Quality gates with comprehensive test execution (unit, integration, E2E)
   - Test data seeding and environment isolation
 
-### 5.2 Production Infrastructure & Deployment  
+### 5.2 Production Infrastructure & Deployment
 - **User Story:** *As a therapist user*, I need reliable, secure access to Marmaid application so that I can manage my practice without service disruptions or data concerns.
 - **Key Features:**
   - Production Supabase project with security hardening (`aajurxtbngbixsdptfzz.supabase.co`)
