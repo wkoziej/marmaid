@@ -1,0 +1,295 @@
+# ABOUTME: Multi-environment deployment workflow for separate repositories
+# ABOUTME: Handles test and production deployments to different GitHub repositories
+name: Multi-Environment Deployment
+
+on:
+  push:
+    branches: [ main, test ]
+  pull_request:
+    branches: [ main, test ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "deployment-${{ github.ref }}"
+  cancel-in-progress: false
+
+jobs:
+  quality-gates:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Type check
+      run: npx tsc --noEmit
+    
+    - name: Run linter
+      run: npm run lint
+    
+    - name: Run unit tests
+      run: npm run test:unit -- --run --reporter=verbose
+    
+    - name: Run integration tests
+      run: npm run test:integration -- --run --reporter=verbose
+    
+    - name: Run tests with coverage
+      run: npm run test:coverage -- --run
+      
+    - name: Check coverage threshold
+      run: |
+        # Run coverage and extract percentage
+        npm run test:coverage -- --run --reporter=verbose 2>&1 | tee coverage_output.log
+        
+        # Extract coverage percentage from vitest output
+        COVERAGE=$(grep -oE '[0-9]+\.[0-9]+%' coverage_output.log | head -1 | sed 's/%//')
+        
+        if [ -z "$COVERAGE" ]; then
+          echo "⚠️  Could not determine coverage percentage"
+          COVERAGE=0
+        fi
+        
+        echo "📊 Test Coverage: $COVERAGE%"
+        
+        # Check if coverage meets threshold (70% for now)
+        if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+          echo "❌ Coverage $COVERAGE% is below 70% threshold"
+          exit 1
+        fi
+        echo "✅ Coverage $COVERAGE% meets threshold"
+    
+    - name: Security audit
+      run: npm audit --audit-level moderate
+      continue-on-error: false
+    
+    - name: Check bundle size
+      run: |
+        npm run build
+        BUNDLE_SIZE=$(du -sh dist/ | cut -f1)
+        echo "📦 Bundle size: $BUNDLE_SIZE"
+        # Alert if bundle is larger than 5MB
+        if [[ $(du -s dist/ | cut -f1) -gt 5120 ]]; then
+          echo "⚠️  Bundle size exceeds 5MB limit"
+          exit 1
+        fi
+    
+    - name: Install Playwright browsers
+      run: npx playwright install chromium --with-deps
+    
+    - name: Run E2E tests
+      run: npm run test:e2e
+      env:
+        PLAYWRIGHT_BASE_URL: http://localhost:3000
+
+  deploy-test:
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: github.ref == 'refs/heads/test' && github.event_name == 'push'
+    
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    environment:
+      name: test
+      url: https://wkoziej.github.io/marmaid-test/
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Configure test environment
+      run: cp .env.test .env.production
+    
+    - name: Build for test
+      run: npm run build
+    
+    - name: Setup Git for deployment
+      run: |
+        git config --global user.name "GitHub Actions (Test Deploy)"
+        git config --global user.email "actions+test@github.com"
+    
+    - name: Clone test repository
+      run: |
+        cd ../
+        git clone https://github.com/wkoziej/marmaid-test.git temp-test-repo
+        echo "✅ Test repository cloned"
+    
+    - name: Deploy to test repository
+      run: |
+        cd ../temp-test-repo
+        
+        # Clear existing files (except .git)
+        find . -not -path './.git*' -not -name '.' -not -name '..' -delete
+        
+        # Copy build files
+        cp -r ../frontend/dist/* .
+        
+        # Create deployment info
+        echo "# Marmaid Test Environment" > README.md
+        echo "" >> README.md
+        echo "**Deployed:** $(date)" >> README.md
+        echo "**Commit:** ${{ github.sha }}" >> README.md
+        echo "**Branch:** ${{ github.ref_name }}" >> README.md
+        echo "" >> README.md
+        echo "[🚀 Production Environment](https://wkoziej.github.io/marmaid/)" >> README.md
+        
+        # Commit and push
+        git add .
+        git commit -m "🧪 Deploy test: ${{ github.sha }} - $(date '+%Y-%m-%d %H:%M:%S')"
+        git push origin main
+        
+        echo "✅ Test deployment completed"
+    
+    - name: Wait for GitHub Pages deployment
+      run: sleep 60
+    
+    - name: Test deployment health check
+      run: |
+        URL="https://wkoziej.github.io/marmaid-test/"
+        echo "🔍 Testing test deployment at: $URL"
+        
+        # Wait for propagation and test
+        for i in {1..5}; do
+          if curl -f -s --connect-timeout 10 --max-time 30 "$URL" > /dev/null; then
+            echo "✅ Test environment is live (attempt $i)"
+            
+            # Check for expected content
+            if curl -s "$URL" | grep -q "Marmaid\|auth\|login"; then
+              echo "✅ Test environment content verified"
+              break
+            else
+              echo "⚠️  Content verification pending..."
+            fi
+          else
+            echo "⏳ Waiting for test environment (attempt $i/5)"
+            if [ $i -lt 5 ]; then
+              sleep 30
+            fi
+          fi
+        done
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    environment:
+      name: production
+      url: https://wkoziej.github.io/marmaid/
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: './frontend/package-lock.json'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build for production
+      run: npm run build
+    
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './frontend/dist'
+        
+    - name: Deploy to GitHub Pages (Production)
+      id: deployment
+      uses: actions/deploy-pages@v4
+    
+    - name: Wait for production deployment
+      run: sleep 60
+    
+    - name: Production smoke test
+      run: |
+        URL="${{ steps.deployment.outputs.page_url }}"
+        echo "🚀 Testing PRODUCTION deployment at: $URL"
+        
+        # Test if site is reachable with retries
+        for i in {1..5}; do
+          if curl -f -s --connect-timeout 10 --max-time 30 "$URL" > /dev/null; then
+            echo "✅ Production site is reachable (attempt $i)"
+            
+            # Test critical functionality
+            if curl -f -s "$URL" | grep -q "auth\|login\|sign"; then
+              echo "✅ Production auth functionality verified"
+              echo "🎉 Production deployment successful!"
+              break
+            else
+              echo "❌ Production auth functionality missing - CRITICAL"
+              exit 1
+            fi
+          else
+            echo "⏳ Waiting for production site (attempt $i/5)"
+            if [ $i -lt 5 ]; then
+              sleep 30
+            else
+              echo "❌ Production site is not reachable after 5 attempts"
+              exit 1
+            fi
+          fi
+        done
+
+  notify-deployment:
+    runs-on: ubuntu-latest
+    needs: [deploy-test, deploy-production]
+    if: always() && (needs.deploy-test.result == 'success' || needs.deploy-production.result == 'success')
+    
+    steps:
+    - name: Deployment notification
+      run: |
+        if [[ "${{ needs.deploy-test.result }}" == "success" ]]; then
+          echo "✅ TEST DEPLOYMENT SUCCESS"
+          echo "🧪 Test Environment: https://wkoziej.github.io/marmaid-test/"
+        fi
+        
+        if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
+          echo "✅ PRODUCTION DEPLOYMENT SUCCESS" 
+          echo "🚀 Production Environment: https://wkoziej.github.io/marmaid/"
+        fi
+        
+        echo ""
+        echo "📊 Health monitoring active"
+        echo "🔧 Rollback procedures available if needed"

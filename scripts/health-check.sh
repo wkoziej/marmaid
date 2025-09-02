@@ -72,8 +72,22 @@ check_test() {
     echo -e "${YELLOW}🧪 TEST ENVIRONMENT${NC}"
     echo "=================================="
     
-    # Get test URL from environment config
-    local test_url
+    # Check test frontend (separate repository)
+    local test_frontend="https://wkoziej.github.io/marmaid-test/"
+    
+    if check_url "$test_frontend" "Test Frontend" 15; then
+        response_time=$(curl -o /dev/null -s -w "%{time_total}" "$test_frontend" 2>/dev/null || echo "timeout")
+        echo "  Response time: ${response_time}s"
+        
+        # Check if it's actually the right content
+        if curl -s "$test_frontend" | grep -q "Marmaid\|auth\|login" 2>/dev/null; then
+            echo -e "  Content check: ${GREEN}✅ Valid${NC}"
+        else
+            echo -e "  Content check: ${YELLOW}⚠️  Unexpected content${NC}"
+        fi
+    fi
+    
+    # Get test Supabase URL from environment config
     if [ -f "frontend/.env.test" ]; then
         test_supabase=$(grep "VITE_SUPABASE_URL" frontend/.env.test | cut -d'=' -f2)
         echo "Test Supabase: $test_supabase"
@@ -85,8 +99,6 @@ check_test() {
         echo -e "${YELLOW}⚠️  Test environment not configured${NC}"
     fi
     
-    # Note: Test frontend URL will be available after GitHub Pages setup
-    echo "Frontend: Test deployment planned"
     echo ""
 }
 

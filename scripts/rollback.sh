@@ -118,11 +118,15 @@ rollback_frontend() {
         "test")
             confirm_action "Rollback test frontend to previous working state"
             branch="test"
+            target_repo="https://github.com/wkoziej/marmaid-test.git"
+            target_url="https://wkoziej.github.io/marmaid-test/"
             danger="normal"
             ;;
         "prod")
             confirm_action "Rollback production frontend deployment" "high"
             branch="main"
+            target_repo="https://github.com/wkoziej/marmaid.git"
+            target_url="https://wkoziej.github.io/marmaid/"
             danger="high"
             ;;
         *)
