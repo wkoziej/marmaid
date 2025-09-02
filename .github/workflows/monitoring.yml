@@ -1,0 +1,120 @@
+# ABOUTME: Monitoring workflow for application health checks and alerting
+# ABOUTME: Runs periodic health checks and sends notifications on failures
+name: Health Check & Monitoring
+
+on:
+  schedule:
+    # Run health check every 15 minutes
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Production Site Health
+      id: prod-health
+      run: |
+        PROD_URL="https://wkoziej.github.io/marmaid/"
+        echo "🔍 Checking production site health: $PROD_URL"
+        
+        # Check if site is reachable
+        if curl -f -s --connect-timeout 10 --max-time 30 "$PROD_URL" > /dev/null; then
+          echo "✅ Production site is healthy"
+          echo "status=healthy" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Production site is down or unreachable"
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+        
+        # Check response time
+        RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" "$PROD_URL")
+        echo "⏱️  Response time: ${RESPONSE_TIME}s"
+        
+        # Alert if response time > 5 seconds
+        if (( $(echo "$RESPONSE_TIME > 5.0" | bc -l) )); then
+          echo "⚠️  Slow response time: ${RESPONSE_TIME}s"
+          echo "slow=true" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Check Test Site Health  
+      id: test-health
+      run: |
+        # Note: Test site URL will need to be updated once test environment is deployed
+        TEST_URL="https://wkoziej.github.io/marmaid/"  # Placeholder
+        echo "🔍 Checking test site health: $TEST_URL"
+        
+        # For now, just log that test environment check is planned
+        echo "📝 Test environment health check planned for future implementation"
+        echo "status=planned" >> $GITHUB_OUTPUT
+    
+    - name: Check Supabase Connectivity
+      id: supabase-health
+      run: |
+        # Check if Supabase is reachable
+        SUPABASE_URL="https://aajurxtbngbixsdptfzz.supabase.co/rest/v1/"
+        echo "🔍 Checking Supabase health: $SUPABASE_URL"
+        
+        if curl -f -s --connect-timeout 10 --max-time 30 "$SUPABASE_URL" > /dev/null; then
+          echo "✅ Supabase is reachable"
+          echo "status=healthy" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Supabase is unreachable"
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+
+  alert-on-failure:
+    runs-on: ubuntu-latest
+    needs: health-check
+    if: failure()
+    steps:
+    - name: Send Alert Notification
+      run: |
+        echo "🚨 ALERT: Health check failed!"
+        echo "Timestamp: $(date)"
+        echo "Workflow: ${{ github.workflow }}"
+        echo "Run ID: ${{ github.run_id }}"
+        
+        # Create summary for GitHub
+        {
+          echo "## 🚨 Health Check Alert"
+          echo ""
+          echo "**Time:** $(date)"
+          echo "**Status:** FAILED"
+          echo "**Workflow:** ${{ github.workflow }}"
+          echo ""
+          echo "### Details"
+          echo "One or more health checks failed. Please investigate immediately."
+          echo ""
+          echo "**Actions Required:**"
+          echo "1. Check application logs"
+          echo "2. Verify Supabase status"  
+          echo "3. Test deployment functionality"
+          echo ""
+          echo "**Links:**"
+          echo "- [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          echo "- [Production Site](https://wkoziej.github.io/marmaid/)"
+        } >> $GITHUB_STEP_SUMMARY
+
+  daily-summary:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' && github.event.schedule == '0 9 * * *'
+    steps:
+    - name: Generate Daily Health Report
+      run: |
+        echo "📊 Daily Health Summary - $(date)"
+        echo ""
+        echo "## System Status Overview"
+        echo "- Production Site: Monitored every 15 minutes"
+        echo "- Supabase Backend: Monitored every 15 minutes" 
+        echo "- Test Environment: Coming soon"
+        echo ""
+        echo "## Recent Activity"
+        echo "Check the Actions tab for recent health check results."
+        echo ""
+        echo "## Key Metrics to Monitor"
+        echo "- Response time < 5 seconds"
+        echo "- Uptime > 99.5%"
+        echo "- Zero critical errors"

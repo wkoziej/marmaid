@@ -87,6 +87,14 @@ jobs:
           echo "⚠️  Bundle size exceeds 5MB limit"
           exit 1
         fi
+    
+    - name: Install Playwright browsers
+      run: npx playwright install chromium --with-deps
+    
+    - name: Run E2E tests
+      run: npm run test:e2e
+      env:
+        PLAYWRIGHT_BASE_URL: http://localhost:3000
 
   deploy-test:
     runs-on: ubuntu-latest

@@ -23,6 +23,14 @@ show_help() {
     echo "  push test       Push migrations to test database"
     echo "  push prod       Push migrations to production database"
     echo ""
+    echo "Monitoring Commands:"
+    echo "  health          Run health check on current environment"
+    echo "  monitor         Start continuous monitoring"
+    echo ""
+    echo "Recovery Commands:"
+    echo "  rollback        Emergency rollback procedures"
+    echo "  backup          Create emergency backup"
+    echo ""
     echo "Testing Commands:"
     echo "  test            Test environment connectivity and isolation"
     echo "  status          Show current environment status"
@@ -96,6 +104,17 @@ case "${1:-}" in
             *) echo "❌ Usage: ./scripts/env push [test|prod]" ;;
         esac
         ;;
+    "health") "$SCRIPT_DIR/health-check.sh" ;;
+    "monitor") 
+        echo "🔄 Starting continuous monitoring..."
+        echo "Press Ctrl+C to stop"
+        while true; do
+            "$SCRIPT_DIR/health-check.sh"
+            sleep 300 # Check every 5 minutes
+        done
+        ;;
+    "rollback") "$SCRIPT_DIR/rollback.sh" "${@:2}" ;;
+    "backup") "$SCRIPT_DIR/rollback.sh" backup ;;
     "test") "$SCRIPT_DIR/test-environments.sh" ;;
     "status") show_status ;;
     "help"|"--help"|"-h"|"") show_help ;;
