@@ -58,8 +58,8 @@ jobs:
         # Run coverage with text-summary reporter and capture output
         npm run test:coverage -- --run --coverage.reporter=text-summary 2>&1 | tee coverage_output.log
         
-        # Extract coverage percentage from "Statements : XX.XX%" format
-        COVERAGE=$(grep -oE 'Statements[[:space:]]*:[[:space:]]*[0-9]+\.[0-9]+%' coverage_output.log | grep -oE '[0-9]+\.[0-9]+' | head -1)
+        # Extract coverage percentage from either "Statements : XX.XX%" or "All files | XX.XX" format
+        COVERAGE=$(grep -oE '(Statements[[:space:]]*:[[:space:]]*[0-9]+\.[0-9]+%|All files[[:space:]]*\|[[:space:]]*[0-9]+\.[0-9]+)' coverage_output.log | grep -oE '[0-9]+\.[0-9]+' | head -1)
         
         if [ -z "$COVERAGE" ]; then
           echo "⚠️  Could not determine coverage percentage"
