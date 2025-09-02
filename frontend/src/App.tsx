@@ -5,6 +5,8 @@ import { AuthGuard } from './lib/auth-guard'
 import { AuthPage } from './app/pages/auth-page'
 import { Dashboard } from './app/pages/dashboard'
 import { ErrorBoundary } from './components/error-boundary'
+import { monitoring } from './lib/monitoring'
+import { useEffect } from 'react'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -66,6 +68,35 @@ function AppRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    // Initialize monitoring
+    monitoring.logUserAction('app_start', {
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+      timestamp: Date.now()
+    })
+
+    // Perform monitoring health check
+    const isHealthy = monitoring.healthCheck()
+    if (!isHealthy) {
+      console.warn('Monitoring system health check failed')
+    }
+
+    // Log page visibility changes for analytics
+    const handleVisibilityChange = () => {
+      monitoring.logUserAction('page_visibility_change', {
+        hidden: document.hidden,
+        visibilityState: document.visibilityState
+      })
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
