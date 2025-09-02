@@ -66,7 +66,7 @@ export const emailChangeSchema = z.object({
 
 export const uiPreferencesSchema = z.object({
   theme: z.enum(['light', 'dark', 'system'], {
-    errorMap: () => ({ message: 'Wybierz prawidłowy motyw' }),
+    message: 'Wybierz prawidłowy motyw',
   }),
   language: z.string().min(2, 'Kod języka musi mieć co najmniej 2 znaki').default('pl'),
 })

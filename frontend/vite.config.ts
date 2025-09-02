@@ -15,7 +15,7 @@ export default defineConfig({
     include: ['src/**/*.{test,spec}.{js,ts,tsx}'],
     exclude: ['**/e2e/**', '**/*.e2e.test.*', '**/node_modules/**'],
     silent: false,
-    onConsoleLog: (log, type) => {
+    onConsoleLog: (_log, type) => {
       // Allow normal console logs but suppress stderr in CI
       if (process.env.CI && type === 'stderr') return false
       return true
