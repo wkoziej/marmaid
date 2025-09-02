@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test:
+  quality-gates:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -36,18 +36,61 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Type check
+      run: npx tsc --noEmit
+    
     - name: Run linter
       run: npm run lint
     
-    - name: Run tests
-      run: npm test -- --run
+    - name: Run unit tests
+      run: npm run test:unit -- --run --reporter=verbose
+    
+    - name: Run integration tests
+      run: npm run test:integration -- --run --reporter=verbose
     
     - name: Run tests with coverage
       run: npm run test:coverage -- --run
+      
+    - name: Check coverage threshold
+      run: |
+        # Run coverage and extract percentage
+        npm run test:coverage -- --run --reporter=verbose 2>&1 | tee coverage_output.log
+        
+        # Extract coverage percentage from vitest output
+        COVERAGE=$(grep -oE '[0-9]+\.[0-9]+%' coverage_output.log | head -1 | sed 's/%//')
+        
+        if [ -z "$COVERAGE" ]; then
+          echo "⚠️  Could not determine coverage percentage"
+          COVERAGE=0
+        fi
+        
+        echo "📊 Test Coverage: $COVERAGE%"
+        
+        # Check if coverage meets threshold (70% for now)
+        if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+          echo "❌ Coverage $COVERAGE% is below 70% threshold"
+          exit 1
+        fi
+        echo "✅ Coverage $COVERAGE% meets threshold"
+    
+    - name: Security audit
+      run: npm audit --audit-level moderate
+      continue-on-error: false
+    
+    - name: Check bundle size
+      run: |
+        npm run build
+        BUNDLE_SIZE=$(du -sh dist/ | cut -f1)
+        echo "📦 Bundle size: $BUNDLE_SIZE"
+        # Alert if bundle is larger than 5MB
+        if [[ $(du -s dist/ | cut -f1) -gt 5120 ]]; then
+          echo "⚠️  Bundle size exceeds 5MB limit"
+          exit 1
+        fi
 
   deploy-test:
     runs-on: ubuntu-latest
-    needs: test
+    needs: quality-gates
     if: github.ref == 'refs/heads/test' && github.event_name == 'push'
     
     defaults:
@@ -88,10 +131,33 @@ jobs:
     - name: Deploy to GitHub Pages (Test)
       id: deployment
       uses: actions/deploy-pages@v4
+    
+    - name: Wait for deployment
+      run: sleep 30
+    
+    - name: Smoke test - Health check
+      run: |
+        URL="${{ steps.deployment.outputs.page_url }}"
+        echo "🔍 Testing deployment at: $URL"
+        
+        # Test if site is reachable
+        if curl -f -s "$URL" > /dev/null; then
+          echo "✅ Site is reachable"
+        else
+          echo "❌ Site is not reachable"
+          exit 1
+        fi
+        
+        # Test if auth page loads
+        if curl -f -s "$URL" | grep -q "auth\|login\|sign"; then
+          echo "✅ Auth functionality detected"
+        else
+          echo "⚠️  Auth functionality not detected in HTML"
+        fi
 
   deploy-production:
     runs-on: ubuntu-latest
-    needs: test
+    needs: quality-gates
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     
     defaults:
@@ -129,3 +195,29 @@ jobs:
     - name: Deploy to GitHub Pages (Production)
       id: deployment
       uses: actions/deploy-pages@v4
+    
+    - name: Wait for deployment
+      run: sleep 30
+    
+    - name: Production smoke test
+      run: |
+        URL="${{ steps.deployment.outputs.page_url }}"
+        echo "🚀 Testing PRODUCTION deployment at: $URL"
+        
+        # Test if site is reachable
+        if curl -f -s "$URL" > /dev/null; then
+          echo "✅ Production site is reachable"
+        else
+          echo "❌ Production site is not reachable"
+          exit 1
+        fi
+        
+        # Test critical functionality
+        if curl -f -s "$URL" | grep -q "auth\|login\|sign"; then
+          echo "✅ Production auth functionality detected"
+        else
+          echo "❌ Production auth functionality missing - CRITICAL"
+          exit 1
+        fi
+        
+        echo "🎉 Production deployment successful!"
