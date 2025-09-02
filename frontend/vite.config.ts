@@ -12,6 +12,8 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test-setup.ts',
+    include: ['src/**/*.{test,spec}.{js,ts,tsx}'],
+    exclude: ['**/e2e/**', '**/*.e2e.test.*', '**/node_modules/**'],
     silent: false,
     onConsoleLog: (log, type) => {
       // Allow normal console logs but suppress stderr in CI
@@ -21,7 +23,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      exclude: ['node_modules/', 'src/test-setup.ts'],
+      exclude: ['node_modules/', 'src/test-setup.ts', '**/e2e/**'],
     },
   },
 })
