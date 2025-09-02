@@ -1,5 +1,6 @@
 import type { User, Session, AuthError } from '@supabase/supabase-js'
 import { createContext } from 'react'
+import type { SecurityAlert, SessionMonitoringData } from './services/securityService'
 
 export interface AuthContextType {
   user: User | null
@@ -8,6 +9,17 @@ export interface AuthContextType {
   signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>
   signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>
   signOut: () => Promise<void>
+  // Security features
+  getSessionStatus: () => Promise<{
+    isValid: boolean
+    timeRemaining: number
+    inactiveTime: number
+    lastActivity: string
+  }>
+  getSecurityAlerts: () => SecurityAlert[]
+  getSessionMonitoringData: () => SessionMonitoringData | null
+  refreshSession: () => Promise<boolean>
+  isSessionValid: () => Promise<boolean>
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
