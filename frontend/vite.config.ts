@@ -12,6 +12,12 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test-setup.ts',
+    silent: false,
+    onConsoleLog: (log, type) => {
+      // Allow normal console logs but suppress stderr in CI
+      if (process.env.CI && type === 'stderr') return false
+      return true
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
