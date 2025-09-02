@@ -141,7 +141,7 @@ jobs:
     - name: Clone test repository
       run: |
         cd ../
-        git clone https://github.com/wkoziej/marmaid-test.git temp-test-repo
+        git clone https://${{ secrets.DEPLOY_TOKEN }}@github.com/wkoziej/marmaid-test.git temp-test-repo
         echo "✅ Test repository cloned"
     
     - name: Deploy to test repository
