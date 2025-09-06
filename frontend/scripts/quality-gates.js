@@ -155,16 +155,24 @@ async function runQualityGates(mode = 'ci') {
   
   // 3. Tests
   if (isPreCommit) {
-    const testFiles = getRelatedTestFiles(changedFiles);
-    if (testFiles.length > 0) {
-      log(`🧪 Running tests for ${testFiles.length} test files`, colors.blue);
-      const testCommand = `npx vitest run ${testFiles.join(' ')}`;
-      const testResult = executeCommand(testCommand, 'Running related tests');
-      results.push({ name: 'Tests', success: testResult.success });
+    const allTestFiles = getRelatedTestFiles(changedFiles);
+    // Filter out integration tests for pre-commit (run only unit tests)
+    const unitTestFiles = allTestFiles.filter(file => !file.includes('integration'));
+    
+    if (unitTestFiles.length > 0) {
+      log(`🧪 Running ${unitTestFiles.length} unit tests (integration tests skipped in pre-commit)`, colors.blue);
+      const testCommand = `VITEST_TEST_TYPE=unit npx vitest run ${unitTestFiles.join(' ')}`;
+      const testResult = executeCommand(testCommand, 'Running related unit tests');
+      results.push({ name: 'Unit Tests', success: testResult.success });
       allPassed = allPassed && testResult.success;
     } else {
-      logWarning('No related test files found for changed files');
-      results.push({ name: 'Tests', success: true, skipped: true });
+      logWarning('No related unit test files found for changed files');
+      results.push({ name: 'Unit Tests', success: true, skipped: true });
+    }
+    
+    // Note about integration tests in pre-commit
+    if (allTestFiles.length > unitTestFiles.length) {
+      logWarning(`${allTestFiles.length - unitTestFiles.length} integration tests skipped (run 'npm run test:integration' to test them)`);
     }
   } else {
     // CI mode - run all tests

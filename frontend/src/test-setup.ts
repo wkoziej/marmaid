@@ -19,28 +19,8 @@ if (isIntegrationTest) {
     console.warn('⚠️  No Supabase environment found - integration tests will be skipped')
   }
 
-  // Don't mock Supabase for integration tests - but mock other services
-  vi.mock('./lib/audit', () => ({
-    auditService: {
-      logDataAccess: vi.fn().mockResolvedValue(true),
-      logDataModify: vi.fn().mockResolvedValue(true),
-    }
-  }))
-
-  vi.mock('./lib/encryption', () => ({
-    encryptionService: {
-      encryptData: vi.fn().mockResolvedValue({
-        data: 'integration-encrypted-data',
-        iv: 'test-iv',
-        salt: 'test-salt',
-        timestamp: new Date().toISOString(),
-        version: '1.0'
-      }),
-      decryptData: vi.fn().mockResolvedValue('integration-decrypted-data'),
-      generateUserKey: vi.fn().mockReturnValue('integration-user-key'),
-      validateEncryptedData: vi.fn().mockReturnValue(false),
-    }
-  }))
+  // Don't mock Supabase for integration tests 
+  // Individual test files handle their own audit/encryption service mocking
 
   // Longer timeout for integration tests
   vi.setConfig({
@@ -55,13 +35,16 @@ if (isIntegrationTest) {
   vi.mock('./lib/supabase', () => ({
     supabase: {
       auth: {
-        getSession: vi.fn(),
+        getSession: vi.fn().mockResolvedValue({
+          data: { session: null },
+          error: null
+        }),
         onAuthStateChange: vi.fn(() => ({
           data: { subscription: { unsubscribe: vi.fn() } }
         })),
-        signUp: vi.fn(),
-        signInWithPassword: vi.fn(),
-        signOut: vi.fn(),
+        signUp: vi.fn().mockResolvedValue({ error: null }),
+        signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
+        signOut: vi.fn().mockResolvedValue({ error: null }),
       },
       from: vi.fn(() => ({
         select: vi.fn().mockReturnThis(),
@@ -70,34 +53,14 @@ if (isIntegrationTest) {
         delete: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         order: vi.fn().mockReturnThis(),
-        single: vi.fn(),
+        single: vi.fn().mockResolvedValue({ data: null, error: null }),
         or: vi.fn().mockReturnThis(),
         overlaps: vi.fn().mockReturnThis(),
+        then: vi.fn((resolve) => resolve({ data: [], error: null }))
       })),
     }
   }))
 
-  // Mock audit service
-  vi.mock('./lib/audit', () => ({
-    auditService: {
-      logDataAccess: vi.fn().mockResolvedValue(true),
-      logDataModify: vi.fn().mockResolvedValue(true),
-    }
-  }))
-
-  // Mock encryption service  
-  vi.mock('./lib/encryption', () => ({
-    encryptionService: {
-      encryptData: vi.fn().mockResolvedValue({
-        data: 'unit-test-encrypted-data',
-        iv: 'mock-iv',
-        salt: 'mock-salt',
-        timestamp: new Date().toISOString(),
-        version: '1.0'
-      }),
-      decryptData: vi.fn().mockResolvedValue('unit-test-decrypted-data'),
-      generateUserKey: vi.fn().mockReturnValue('unit-test-user-key'),
-      validateEncryptedData: vi.fn().mockReturnValue(false),
-    }
-  }))
+  // Individual test files handle their own audit/encryption service mocking
+  // Only mock Supabase globally for unit tests
 }

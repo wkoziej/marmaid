@@ -150,6 +150,10 @@ describe('Audit Service', () => {
       
       await auditService.initialize()
 
+      // Temporarily change NODE_ENV to trigger console.warn
+      const originalNodeEnv = process.env.NODE_ENV
+      process.env.NODE_ENV = 'development'
+      
       const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
       const result = await auditService.logEvent(
@@ -162,6 +166,9 @@ describe('Audit Service', () => {
       expect(consoleSpy).toHaveBeenCalledWith(
         'Audit logging attempted without authenticated user'
       )
+      
+      // Restore original NODE_ENV
+      process.env.NODE_ENV = originalNodeEnv
 
       consoleSpy.mockRestore()
     })

@@ -12,7 +12,7 @@ export const clientProfileSchema = z.object({
     .regex(/^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\s\-'.]+$/, 'Nieprawidłowe znaki w imieniu i nazwisku'),
   email: z
     .string()
-    .email('Wprowadź prawidłowy adres email')
+    .refine((val) => val === '' || z.string().email().safeParse(val).success, 'Wprowadź prawidłowy adres email')
     .optional()
     .or(z.literal('')),
   phone: z
@@ -87,7 +87,7 @@ export const emergencyContactSchema = z.object({
     .min(9, 'Numer telefonu musi mieć co najmniej 9 cyfr'),
   email: z
     .string()
-    .email('Wprowadź prawidłowy adres email')
+    .refine((val) => val === '' || z.string().email().safeParse(val).success, 'Wprowadź prawidłowy adres email')
     .optional()
     .or(z.literal('')),
   address: z
