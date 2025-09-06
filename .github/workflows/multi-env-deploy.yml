@@ -150,6 +150,10 @@ jobs:
     - name: Apply migrations to test database
       run: |
         cd ../supabase
+        # Initialize minimal Supabase project for CI/CD
+        if [ ! -f config.toml ]; then
+          supabase init
+        fi
         # Login to Supabase CLI
         supabase login --token $SUPABASE_ACCESS_TOKEN
         # Link project and apply migrations
