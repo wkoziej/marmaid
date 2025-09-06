@@ -25,6 +25,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Debug - List repository structure
+      run: |
+        echo "=== Root directory ==="
+        pwd
+        ls -la
+        echo "=== Frontend directory ==="
+        ls -la frontend/ || echo 'Frontend directory not found'
+        echo "=== Looking for package files ==="
+        find . -name "package*.json" -o -name "package-lock.json" || echo 'No package files found'
+    
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
