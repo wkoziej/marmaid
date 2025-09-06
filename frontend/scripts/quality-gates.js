@@ -179,7 +179,8 @@ async function runQualityGates(mode = 'ci') {
   allPassed = allPassed && typecheckResult.success;
   
   // 3. Test Coverage
-  const coverageResult = executeCommand('npm run test:unit:coverage', 'Running test coverage check', { silent: true });
+  const coverageCommand = isPreCommit ? 'npm run test:coverage' : 'npm run test:coverage';
+  const coverageResult = executeCommand(coverageCommand, 'Running test coverage check', { silent: true });
   
   // Parse coverage from output to check thresholds
   let coveragePassed = coverageResult.success;
@@ -187,7 +188,7 @@ async function runQualityGates(mode = 'ci') {
     const coverageMatch = coverageResult.output.match(/Statements\s*:\s*([\d.]+)%/);
     if (coverageMatch) {
       const coverage = parseFloat(coverageMatch[1]);
-      const threshold = isPreCommit ? 25 : 30; // Lower threshold for pre-commit
+      const threshold = isPreCommit ? 50 : 50; // Match CI/CD threshold
       coveragePassed = coverage >= threshold;
       if (!coveragePassed) {
         logError(`Coverage ${coverage}% is below ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`);
@@ -202,11 +203,12 @@ async function runQualityGates(mode = 'ci') {
   // 4. Tests
   if (isPreCommit) {
     const allTestFiles = getRelatedTestFiles(changedFiles);
-    // Filter out integration tests for pre-commit (run only unit tests)
     const unitTestFiles = allTestFiles.filter(file => !file.includes('integration'));
+    const integrationTestFiles = allTestFiles.filter(file => file.includes('integration'));
     
+    // Run unit tests
     if (unitTestFiles.length > 0) {
-      log(`🧪 Running ${unitTestFiles.length} unit tests (integration tests skipped in pre-commit)`, colors.blue);
+      log(`🧪 Running ${unitTestFiles.length} unit tests`, colors.blue);
       const testCommand = `VITEST_TEST_TYPE=unit npx vitest run ${unitTestFiles.join(' ')}`;
       const testResult = executeCommand(testCommand, 'Running related unit tests');
       results.push({ name: 'Unit Tests', success: testResult.success });
@@ -216,9 +218,29 @@ async function runQualityGates(mode = 'ci') {
       results.push({ name: 'Unit Tests', success: true, skipped: true });
     }
     
-    // Note about integration tests in pre-commit
-    if (allTestFiles.length > unitTestFiles.length) {
-      logWarning(`${allTestFiles.length - unitTestFiles.length} integration tests skipped (run 'npm run test:integration' to test them)`);
+    // Run integration tests if any related files changed
+    if (integrationTestFiles.length > 0) {
+      const hasSupabaseCredentials = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!hasSupabaseCredentials) {
+        logWarning('Skipping integration tests: Supabase credentials not found');
+        results.push({ name: 'Integration Tests', success: true, skipped: true });
+      } else {
+        log(`🔗 Running ${integrationTestFiles.length} integration tests`, colors.blue);
+        const integrationCommand = `VITEST_TEST_TYPE=integration npx vitest run ${integrationTestFiles.join(' ')}`;
+        const integrationResult = executeCommand(integrationCommand, 'Running related integration tests', {
+          env: {
+            ...process.env,
+            VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+            VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+          }
+        });
+        results.push({ name: 'Integration Tests', success: integrationResult.success });
+        allPassed = allPassed && integrationResult.success;
+      }
+    } else {
+      logWarning('No related integration test files found for changed files');
+      results.push({ name: 'Integration Tests', success: true, skipped: true });
     }
   } else {
     // CI mode - run all tests
