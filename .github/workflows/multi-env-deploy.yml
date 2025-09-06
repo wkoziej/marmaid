@@ -50,11 +50,12 @@ jobs:
     - name: Apply migrations to test database
       run: |
         cd supabase
-        supabase link --project-ref ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
+        supabase link --project-ref $SUPABASE_PROJECT_ID
         supabase db push --include-seed=false
         echo "✅ Migrations applied to test database"
       env:
         SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
         SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
     
     - name: Install dependencies
