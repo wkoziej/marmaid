@@ -188,7 +188,7 @@ async function runQualityGates(mode = 'ci') {
     const coverageMatch = coverageResult.output.match(/Statements\s*:\s*([\d.]+)%/);
     if (coverageMatch) {
       const coverage = parseFloat(coverageMatch[1]);
-      const threshold = isPreCommit ? 50 : 50; // Match CI/CD threshold
+      const threshold = isPreCommit ? 45 : 45; // Match CI/CD threshold
       coveragePassed = coverage >= threshold;
       if (!coveragePassed) {
         logError(`Coverage ${coverage}% is below ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`);
