@@ -3,8 +3,33 @@
 // ABOUTME: Runs linting, type checking, and tests with smart file filtering
 
 import { execSync, spawn } from 'child_process';
-import { existsSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
+
+// Load environment variables from .env files
+function loadEnvFiles() {
+  const envFiles = ['.env.test.local', '.env.local', '.env'];
+  
+  for (const file of envFiles) {
+    const filePath = resolve(file);
+    if (existsSync(filePath)) {
+      const content = readFileSync(filePath, 'utf8');
+      content.split('\n').forEach(line => {
+        const match = line.match(/^([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/);
+        if (match) {
+          const [, key, value] = match;
+          // Only set if not already set
+          if (!process.env[key]) {
+            process.env[key] = value.replace(/^["']|["']$/g, '');
+          }
+        }
+      });
+    }
+  }
+}
+
+// Load environment variables at startup
+loadEnvFiles();
 
 // Colors for console output
 const colors = {
@@ -153,7 +178,28 @@ async function runQualityGates(mode = 'ci') {
   results.push({ name: 'TypeCheck', success: typecheckResult.success });
   allPassed = allPassed && typecheckResult.success;
   
-  // 3. Tests
+  // 3. Test Coverage
+  const coverageResult = executeCommand('npm run test:unit:coverage', 'Running test coverage check', { silent: true });
+  
+  // Parse coverage from output to check thresholds
+  let coveragePassed = coverageResult.success;
+  if (coverageResult.success && coverageResult.output) {
+    const coverageMatch = coverageResult.output.match(/Statements\s*:\s*([\d.]+)%/);
+    if (coverageMatch) {
+      const coverage = parseFloat(coverageMatch[1]);
+      const threshold = isPreCommit ? 25 : 30; // Lower threshold for pre-commit
+      coveragePassed = coverage >= threshold;
+      if (!coveragePassed) {
+        logError(`Coverage ${coverage}% is below ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`);
+      } else {
+        logSuccess(`Coverage ${coverage}% meets ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`);
+      }
+    }
+  }
+  results.push({ name: 'Test Coverage', success: coveragePassed });
+  allPassed = allPassed && coveragePassed;
+
+  // 4. Tests
   if (isPreCommit) {
     const allTestFiles = getRelatedTestFiles(changedFiles);
     // Filter out integration tests for pre-commit (run only unit tests)
@@ -181,16 +227,25 @@ async function runQualityGates(mode = 'ci') {
     allPassed = allPassed && unitTestResult.success;
     
     if (unitTestResult.success) {
-      const integrationTestResult = executeCommand('npm run test:integration', 'Running integration tests', {
-        env: {
-          ...process.env,
-          // Ensure test environment variables are available
-          VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-          VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-        }
-      });
-      results.push({ name: 'Integration Tests', success: integrationTestResult.success });
-      allPassed = allPassed && integrationTestResult.success;
+      // Check if integration tests should run (requires database with applied migrations)
+      const hasSupabaseCredentials = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+      
+      if (!hasSupabaseCredentials) {
+        logWarning('Skipping integration tests: Supabase credentials not found');
+        results.push({ name: 'Integration Tests', success: true, skipped: true });
+      } else {
+        logWarning('Integration tests require database with applied migrations from ../supabase/migrations/');
+        const integrationTestResult = executeCommand('npm run test:integration', 'Running integration tests', {
+          env: {
+            ...process.env,
+            // Ensure test environment variables are available
+            VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+            VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+          }
+        });
+        results.push({ name: 'Integration Tests', success: integrationTestResult.success });
+        allPassed = allPassed && integrationTestResult.success;
+      }
     }
   }
   
