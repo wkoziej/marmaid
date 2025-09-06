@@ -42,22 +42,6 @@ jobs:
         cache: 'npm'
         cache-dependency-path: frontend/package-lock.json
     
-    - name: Setup Supabase CLI
-      uses: supabase/setup-cli@v1
-      with:
-        version: '1.200.3'
-    
-    - name: Apply migrations to test database
-      run: |
-        cd supabase
-        supabase link --project-ref $SUPABASE_PROJECT_ID
-        supabase db push --include-seed=false
-        echo "✅ Migrations applied to test database"
-      env:
-        SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
-        SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
-    
     - name: Install dependencies
       run: |
         echo "Current directory:"
@@ -157,6 +141,22 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         fetch-depth: 0
+    
+    - name: Setup Supabase CLI
+      uses: supabase/setup-cli@v1
+      with:
+        version: '1.200.3'
+    
+    - name: Apply migrations to test database
+      run: |
+        cd ../supabase
+        # Apply migrations directly to remote database without config.toml
+        supabase db push --project-ref $SUPABASE_PROJECT_ID --include-seed=false
+        echo "✅ Migrations applied to test database"
+      env:
+        SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
+        SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
