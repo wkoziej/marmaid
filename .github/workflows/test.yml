@@ -25,24 +25,10 @@ jobs:
         cd frontend
         npm ci
     
-    - name: Run linting
+    - name: Run quality gates
       run: |
         cd frontend
-        npm run lint
-    
-    - name: Run unit tests
-      run: |
-        cd frontend
-        npm run test:unit
-      env:
-        # Supabase test environment secrets
-        VITE_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
-        VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-    
-    - name: Run integration tests
-      run: |
-        cd frontend
-        npm run test:integration
+        npm run quality-gates
       env:
         # Supabase test environment secrets
         VITE_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}

@@ -17,7 +17,7 @@ export const clientProfileSchema = z.object({
     .or(z.literal('')),
   phone: z
     .string()
-    .regex(/^[\d\s\-\+\(\)]+$/, 'Nieprawidłowy format numeru telefonu')
+    .regex(/^[\d\s\-+()]+$/, 'Nieprawidłowy format numeru telefonu')
     .min(9, 'Numer telefonu musi mieć co najmniej 9 cyfr')
     .optional()
     .or(z.literal('')),
@@ -83,7 +83,7 @@ export const emergencyContactSchema = z.object({
     .max(50, 'Pokrewieństwo nie może przekraczać 50 znaków'),
   phone: z
     .string()
-    .regex(/^[\d\s\-\+\(\)]+$/, 'Nieprawidłowy format numeru telefonu')
+    .regex(/^[\d\s\-+()]+$/, 'Nieprawidłowy format numeru telefonu')
     .min(9, 'Numer telefonu musi mieć co najmniej 9 cyfr'),
   email: z
     .string()
@@ -139,13 +139,13 @@ export const validatePhoneNumber = (phone: string): boolean => {
   if (!phone || phone.trim() === '') return true;
   
   // Remove spaces, dashes, and brackets
-  const cleanPhone = phone.replace(/[\s\-\(\)\+]/g, '');
+  const cleanPhone = phone.replace(/[\s\-()+ ]/g, '');
   
   // Should have 9-15 digits
   return /^\d{9,15}$/.test(cleanPhone);
 };
 
-export const validateEmergencyContactUniqueness = (contacts: any[]): boolean => {
+export const validateEmergencyContactUniqueness = (contacts: EmergencyContactFormData[]): boolean => {
   if (!contacts || contacts.length === 0) return true;
   
   const phoneNumbers = contacts.map(contact => contact.phone).filter(Boolean);
