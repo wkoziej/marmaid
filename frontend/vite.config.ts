@@ -21,6 +21,7 @@ export default defineConfig({
       if (process.env.CI && type === 'stderr') return false
       return true
     },
+    // Environment variables are loaded from .env files automatically
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'text-summary'],

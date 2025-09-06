@@ -94,7 +94,9 @@ class AuditService {
   ): Promise<boolean> {
     try {
       if (!this.currentUser) {
-        console.warn('Audit logging attempted without authenticated user')
+        if (process.env.NODE_ENV !== 'test') {
+          console.warn('Audit logging attempted without authenticated user')
+        }
         return false
       }
 
@@ -136,7 +138,9 @@ class AuditService {
 
       return true
     } catch (error) {
-      console.error('Audit logging error:', error)
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Audit logging error:', error)
+      }
       return false
     }
   }
