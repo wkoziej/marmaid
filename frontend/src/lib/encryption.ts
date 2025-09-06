@@ -131,7 +131,9 @@ class EncryptionService {
         version: '1.0'
       }
     } catch (error) {
-      console.error('Encryption failed:', error)
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Encryption failed:', error)
+      }
       throw new Error('Failed to encrypt data')
     }
   }
@@ -169,7 +171,9 @@ class EncryptionService {
 
       return this.decoder.decode(decryptedBuffer)
     } catch (error) {
-      console.error('Decryption failed:', error)
+      if (process.env.NODE_ENV !== 'test') {
+        console.error('Decryption failed:', error)
+      }
       throw new Error('Failed to decrypt data - invalid key or corrupted data')
     }
   }

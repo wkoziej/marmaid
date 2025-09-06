@@ -101,7 +101,7 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <BrowserRouter>
+          <BrowserRouter basename={import.meta.env.VITE_ENVIRONMENT === 'test' ? '/marmaid-test' : '/'}>
             <AppRoutes />
           </BrowserRouter>
         </AuthProvider>
