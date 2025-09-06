@@ -21,9 +21,6 @@ concurrency:
 jobs:
   quality-gates:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend
 
     steps:
     - uses: actions/checkout@v4
@@ -36,19 +33,29 @@ jobs:
         cache-dependency-path: frontend/package-lock.json
     
     - name: Install dependencies
-      run: npm ci
+      run: |
+        cd frontend
+        npm ci
     
     - name: Type check
-      run: npx tsc --noEmit
+      run: |
+        cd frontend
+        npx tsc --noEmit
     
     - name: Run linter
-      run: npm run lint
+      run: |
+        cd frontend
+        npm run lint
     
     - name: Run unit tests
-      run: npm run test:unit -- --run --reporter=basic
+      run: |
+        cd frontend
+        npm run test:unit -- --run --reporter=basic
     
     - name: Run integration tests
-      run: npm run test:integration -- --run --reporter=basic
+      run: |
+        cd frontend
+        npm run test:integration -- --run --reporter=basic
     
     - name: Run tests with coverage
       run: npm run test:coverage -- --run
