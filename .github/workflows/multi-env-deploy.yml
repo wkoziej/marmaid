@@ -44,8 +44,17 @@ jobs:
     
     - name: Install dependencies
       run: |
+        echo "Current directory:"
+        pwd
+        ls -la
+        echo "Changing to frontend:"
         cd frontend
-        npm ci
+        pwd
+        ls -la
+        echo "Looking for package-lock.json:"
+        ls -la package-lock.json || echo 'package-lock.json NOT FOUND'
+        echo "Running npm install:"
+        npm install
     
     - name: Type check
       run: |
