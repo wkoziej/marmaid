@@ -145,7 +145,7 @@ jobs:
     - name: Setup Supabase CLI
       uses: supabase/setup-cli@v1
       with:
-        version: '1.200.3'
+        version: '2.39.2'
     
     - name: Apply migrations to test database
       run: |
