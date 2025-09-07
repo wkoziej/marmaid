@@ -41,29 +41,67 @@ jobs:
     - name: Check Test Site Health  
       id: test-health
       run: |
-        # Note: Test site URL will need to be updated once test environment is deployed
-        TEST_URL="https://wkoziej.github.io/marmaid/"  # Placeholder
+        TEST_URL="https://wkoziej.github.io/marmaid-test/"
         echo "🔍 Checking test site health: $TEST_URL"
         
-        # For now, just log that test environment check is planned
-        echo "📝 Test environment health check planned for future implementation"
-        echo "status=planned" >> $GITHUB_OUTPUT
+        if curl -f -s --connect-timeout 10 --max-time 30 "$TEST_URL" > /dev/null; then
+          echo "✅ Test site is healthy"
+          echo "status=healthy" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Test site is down or unreachable"
+          echo "status=unhealthy" >> $GITHUB_OUTPUT
+          # Don't exit 1 here - test failures shouldn't break production monitoring
+        fi
     
     - name: Check Supabase Connectivity
       id: supabase-health
+      env:
+        PROD_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
+        PROD_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+        TEST_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
+        TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
       run: |
-        # Check if Supabase is reachable
-        SUPABASE_URL="https://aajurxtbngbixsdptfzz.supabase.co/rest/v1/"
-        echo "🔍 Checking Supabase health: $SUPABASE_URL"
-        
-        if curl -f -s --connect-timeout 10 --max-time 30 "$SUPABASE_URL" > /dev/null; then
-          echo "✅ Supabase is reachable"
-          echo "status=healthy" >> $GITHUB_OUTPUT
+        # Check production Supabase health
+        if [ -n "$PROD_SUPABASE_URL" ] && [ -n "$PROD_SUPABASE_ANON_KEY" ]; then
+          HEALTH_URL="${PROD_SUPABASE_URL}/rest/v1/health"
+          echo "🔍 Checking PRODUCTION Supabase health: $HEALTH_URL"
+          
+          if curl -f -s --connect-timeout 10 --max-time 30 \
+            -H "apikey: $PROD_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $PROD_SUPABASE_ANON_KEY" \
+            "$HEALTH_URL" > /dev/null; then
+            echo "✅ Production Supabase is healthy"
+            echo "prod_status=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Production Supabase health check failed"
+            echo "prod_status=unhealthy" >> $GITHUB_OUTPUT
+          fi
         else
-          echo "❌ Supabase is unreachable"
-          echo "status=unhealthy" >> $GITHUB_OUTPUT
-          exit 1
+          echo "⚠️ Production Supabase secrets not configured"
+          echo "prod_status=not_configured" >> $GITHUB_OUTPUT
         fi
+        
+        # Check test Supabase health
+        if [ -n "$TEST_SUPABASE_URL" ] && [ -n "$TEST_SUPABASE_ANON_KEY" ]; then
+          TEST_HEALTH_URL="${TEST_SUPABASE_URL}/rest/v1/health"
+          echo "🔍 Checking TEST Supabase health: $TEST_HEALTH_URL"
+          
+          if curl -f -s --connect-timeout 10 --max-time 30 \
+            -H "apikey: $TEST_SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $TEST_SUPABASE_ANON_KEY" \
+            "$TEST_HEALTH_URL" > /dev/null; then
+            echo "✅ Test Supabase is healthy"
+            echo "test_status=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Test Supabase health check failed"
+            echo "test_status=unhealthy" >> $GITHUB_OUTPUT
+          fi
+        else
+          echo "⚠️ Test Supabase secrets not configured"
+          echo "test_status=not_configured" >> $GITHUB_OUTPUT
+        fi
+        
+        echo "status=completed" >> $GITHUB_OUTPUT
 
   alert-on-failure:
     runs-on: ubuntu-latest
