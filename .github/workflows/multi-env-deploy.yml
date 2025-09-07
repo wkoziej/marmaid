@@ -178,7 +178,7 @@ jobs:
     - name: Build for test
       run: npm run build
       env:
-        VITE_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+        VITE_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
         VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
         VITE_ENVIRONMENT: test
     
@@ -301,6 +301,10 @@ jobs:
     
     - name: Build for production
       run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+        VITE_ENVIRONMENT: production
     
     - name: Setup Pages
       uses: actions/configure-pages@v5
