@@ -73,7 +73,7 @@ check_test() {
     echo "=================================="
     
     # Check test frontend (separate repository)
-    local test_frontend="https://wkoziej.github.io/marmaid-test/"
+    local test_frontend="https://test.marmaid.pl/"
     
     if check_url "$test_frontend" "Test Frontend" 15; then
         response_time=$(curl -o /dev/null -s -w "%{time_total}" "$test_frontend" 2>/dev/null || echo "timeout")
@@ -106,7 +106,7 @@ check_prod() {
     echo -e "${GREEN}🚀 PRODUCTION ENVIRONMENT${NC}"
     echo "=================================="
     
-    local prod_frontend="https://wkoziej.github.io/marmaid/"
+    local prod_frontend="https://marmaid.pl/"
     local prod_supabase="https://aajurxtbngbixsdptfzz.supabase.co"
     
     # Check production frontend

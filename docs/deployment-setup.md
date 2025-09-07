@@ -54,7 +54,7 @@ git push origin test
 
 Sprawdź:
 - GitHub Actions: https://github.com/wkoziej/marmaid/actions
-- Test site: https://wkoziej.github.io/marmaid-test/ (po ~5 min)
+- Test site: https://test.marmaid.pl/ (po ~5 min)
 
 ## 📊 Production Deployment
 
@@ -65,7 +65,7 @@ git push origin main
 ```
 
 Sprawdź:
-- Production: https://wkoziej.github.io/marmaid/
+- Production: https://marmaid.pl/
 
 ## 🔧 Daily Usage
 
@@ -83,8 +83,8 @@ Sprawdź:
 ```
 
 ## 🎯 URLs Summary
-- **Test:** https://wkoziej.github.io/marmaid-test/
-- **Production:** https://wkoziej.github.io/marmaid/
+- **Test:** https://test.marmaid.pl/
+- **Production:** https://marmaid.pl/
 - **Source Repo:** https://github.com/wkoziej/marmaid
 - **Test Repo:** https://github.com/wkoziej/marmaid-test
 
