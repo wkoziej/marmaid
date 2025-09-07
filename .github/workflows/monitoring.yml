@@ -15,7 +15,7 @@ jobs:
     - name: Check Production Site Health
       id: prod-health
       run: |
-        PROD_URL="https://wkoziej.github.io/marmaid/"
+        PROD_URL="https://marmaid.pl/"
         echo "🔍 Checking production site health: $PROD_URL"
         
         # Check if site is reachable
@@ -41,7 +41,7 @@ jobs:
     - name: Check Test Site Health  
       id: test-health
       run: |
-        TEST_URL="https://wkoziej.github.io/marmaid-test/"
+        TEST_URL="https://test.marmaid.pl/"
         echo "🔍 Checking test site health: $TEST_URL"
         
         if curl -f -s --connect-timeout 10 --max-time 30 "$TEST_URL" > /dev/null; then
@@ -133,7 +133,7 @@ jobs:
           echo ""
           echo "**Links:**"
           echo "- [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-          echo "- [Production Site](https://wkoziej.github.io/marmaid/)"
+          echo "- [Production Site](https://marmaid.pl/)"
         } >> $GITHUB_STEP_SUMMARY
 
   daily-summary:

@@ -134,7 +134,7 @@ jobs:
 
     environment:
       name: test
-      url: https://wkoziej.github.io/marmaid-test/
+      url: https://test.marmaid.pl/
 
     steps:
     - uses: actions/checkout@v4
@@ -210,7 +210,7 @@ jobs:
         echo "**Commit:** ${{ github.sha }}" >> README.md
         echo "**Branch:** ${{ github.ref_name }}" >> README.md
         echo "" >> README.md
-        echo "[🚀 Production Environment](https://wkoziej.github.io/marmaid/)" >> README.md
+        echo "[🚀 Production Environment](https://marmaid.pl/)" >> README.md
         
         # Commit and push
         git add .
@@ -224,7 +224,7 @@ jobs:
     
     - name: Test deployment health check
       run: |
-        URL="https://wkoziej.github.io/marmaid-test/"
+        URL="https://test.marmaid.pl/"
         echo "🔍 Testing test deployment at: $URL"
         
         # Wait for propagation and test
@@ -258,7 +258,7 @@ jobs:
 
     environment:
       name: production
-      url: https://wkoziej.github.io/marmaid/
+      url: https://marmaid.pl/
 
     steps:
     - uses: actions/checkout@v4
@@ -323,7 +323,7 @@ jobs:
     
     - name: Production smoke test
       run: |
-        URL="https://wkoziej.github.io/marmaid/"
+        URL="https://marmaid.pl/"
         echo "🚀 Testing PRODUCTION deployment at: $URL"
         
         # Test if site is reachable with retries
@@ -361,12 +361,12 @@ jobs:
       run: |
         if [[ "${{ needs.deploy-test.result }}" == "success" ]]; then
           echo "✅ TEST DEPLOYMENT SUCCESS"
-          echo "🧪 Test Environment: https://wkoziej.github.io/marmaid-test/"
+          echo "🧪 Test Environment: https://test.marmaid.pl/"
         fi
         
         if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
           echo "✅ PRODUCTION DEPLOYMENT SUCCESS" 
-          echo "🚀 Production Environment: https://wkoziej.github.io/marmaid/"
+          echo "🚀 Production Environment: https://marmaid.pl/"
         fi
         
         echo ""
