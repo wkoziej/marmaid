@@ -15,7 +15,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "deployment-${{ github.ref }}"
+  group: "pages-deployment"
   cancel-in-progress: false
 
 jobs:
@@ -306,7 +306,19 @@ jobs:
         VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
         VITE_ENVIRONMENT: production
     
-    - name: Wait for GitHub Pages deployment
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+      
+    - name: Upload artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: './frontend/dist'
+        
+    - name: Deploy to GitHub Pages (Production)
+      id: deployment
+      uses: actions/deploy-pages@v4
+    
+    - name: Wait for production deployment
       run: sleep 60
     
     - name: Production smoke test
