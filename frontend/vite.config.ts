@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
   
   return {
     plugins: [react()],
-    base: process.env.VITE_ENVIRONMENT === 'test' ? '/marmaid-test/' : '/',
+    base: process.env.VITE_ENVIRONMENT === 'test' ? '/marmaid-test/' : '/marmaid/',
     build: {
       outDir: 'dist',
     },
