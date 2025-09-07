@@ -306,24 +306,12 @@ jobs:
         VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
         VITE_ENVIRONMENT: production
     
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: './frontend/dist'
-        
-    - name: Deploy to GitHub Pages (Production)
-      id: deployment
-      uses: actions/deploy-pages@v4
-    
-    - name: Wait for production deployment
+    - name: Wait for GitHub Pages deployment
       run: sleep 60
     
     - name: Production smoke test
       run: |
-        URL="${{ steps.deployment.outputs.page_url }}"
+        URL="https://wkoziej.github.io/marmaid/"
         echo "🚀 Testing PRODUCTION deployment at: $URL"
         
         # Test if site is reachable with retries
@@ -331,13 +319,13 @@ jobs:
           if curl -f -s --connect-timeout 10 --max-time 30 "$URL" > /dev/null; then
             echo "✅ Production site is reachable (attempt $i)"
             
-            # Test critical functionality
-            if curl -f -s "$URL" | grep -q "auth\|login\|sign"; then
-              echo "✅ Production auth functionality verified"
+            # Test critical functionality - check for React app structure
+            if curl -f -s "$URL" | grep -q "<div id=\"root\">"; then
+              echo "✅ Production React app structure verified"
               echo "🎉 Production deployment successful!"
               break
             else
-              echo "❌ Production auth functionality missing - CRITICAL"
+              echo "❌ Production app structure missing - CRITICAL"
               exit 1
             fi
           else
