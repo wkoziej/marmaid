@@ -5,6 +5,9 @@ import { AuthGuard } from './lib/auth-guard'
 import { AuthPage } from './app/pages/auth-page'
 import { Dashboard } from './app/pages/dashboard'
 import { ErrorBoundary } from './components/error-boundary'
+import { DashboardLayout } from './app/layout'
+import { ClientsPage } from './app/pages/clients-page'
+import { ProfilePage } from './app/pages/profile-page'
 import { monitoring } from './lib/monitoring'
 import { useEffect } from 'react'
 
@@ -52,17 +55,18 @@ function AppRoutes() {
         element={user ? <Navigate to="/dashboard" replace /> : <AuthPage />} 
       />
       <Route 
-        path="/dashboard" 
+        path="/"
         element={
           <AuthGuard fallback={<Navigate to="/auth" replace />}>
-            <Dashboard />
+            <DashboardLayout />
           </AuthGuard>
-        } 
-      />
-      <Route 
-        path="/" 
-        element={<Navigate to={user ? "/dashboard" : "/auth"} replace />} 
-      />
+        }
+      >
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="clients" element={<ClientsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+      </Route>
     </Routes>
   )
 }
