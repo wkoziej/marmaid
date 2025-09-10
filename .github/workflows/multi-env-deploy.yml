@@ -113,6 +113,10 @@ jobs:
     
     - name: Build landing page for test
       run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+        VITE_ENVIRONMENT: test
     
     - name: Setup Git for deployment
       run: |
