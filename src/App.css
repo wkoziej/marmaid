@@ -1,0 +1,68 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.card {
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  background: white;
+  max-width: 500px;
+}
+
+.card h1 {
+  margin-bottom: 1rem;
+  color: #1e293b;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.card p {
+  margin-bottom: 1rem;
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.version-info {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.version-info p {
+  margin: 0.5rem 0;
+  color: #475569;
+  font-family: monospace;
+}
+
+.links {
+  margin-top: 2rem;
+}
+
+.links a {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.links a:hover {
+  background: #2563eb;
+}

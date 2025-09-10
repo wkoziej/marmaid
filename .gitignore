@@ -154,6 +154,6 @@ site/
 # Test artifacts
 test-results/
 playwright-report/
-e2e-results/ 
-frontend/.env.test
-frontend/.env.production
+e2e-results/
+.env.test
+.env.production
