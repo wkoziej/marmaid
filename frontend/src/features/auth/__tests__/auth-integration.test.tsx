@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '../auth-context'
 import { AuthPage } from '../../../app/pages/auth-page'
 import { Dashboard } from '../../../app/pages/dashboard'
@@ -9,9 +9,12 @@ import { supabase } from '../../../lib/supabase'
 // Test component that combines AuthPage and Dashboard with routing logic
 function TestApp({ showDashboard = false }: { showDashboard?: boolean }) {
   return (
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[showDashboard ? '/dashboard' : '/auth']}>
       <AuthProvider>
-        {showDashboard ? <Dashboard /> : <AuthPage />}
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Routes>
       </AuthProvider>
     </MemoryRouter>
   )
@@ -220,12 +223,209 @@ describe('Authentication Integration Flow', () => {
     expect(screen.getByText('test@example.com')).toBeInTheDocument()
     
     // Click logout
-    const logoutButton = screen.getByText('Wyloguj się')
+    const logoutButton = screen.getByTestId('logout-button')
     await user.click(logoutButton)
     
     await waitFor(() => {
       expect(supabase.auth.signOut).toHaveBeenCalled()
     })
+  })
+
+  it('should show loading indicator during logout process', async () => {
+    const user = userEvent.setup()
+    
+    // Mock authenticated session
+    const mockSession = {
+      user: { 
+        id: '123', 
+        email: 'test@example.com',
+        aud: 'authenticated'
+      },
+      access_token: 'mock_token'
+    }
+    
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { session: mockSession },
+      error: null
+    })
+
+    // Mock auth state subscription with immediate SIGNED_IN callback
+    const mockSubscription = { unsubscribe: vi.fn() }
+    const mockCallback = vi.fn()
+    vi.mocked(supabase.auth.onAuthStateChange).mockImplementation((callback) => {
+      mockCallback.mockImplementation(callback)
+      // Immediately call with SIGNED_IN to set up initial state
+      setTimeout(() => callback('SIGNED_IN', mockSession), 0)
+      return { data: { subscription: mockSubscription } }
+    })
+
+    // Mock slow logout to see loading state - delay the promise resolution
+    let resolveLogout: (value: any) => void
+    const logoutPromise = new Promise(resolve => {
+      resolveLogout = resolve
+    })
+    vi.mocked(supabase.auth.signOut).mockReturnValue(logoutPromise)
+
+    render(<TestApp showDashboard={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Marmaid Dashboard')).toBeInTheDocument()
+    })
+    
+    // Click logout
+    const logoutButton = screen.getByTestId('logout-button')
+    await user.click(logoutButton)
+    
+    // Should show loading state
+    await waitFor(() => {
+      expect(screen.getByText('Wylogowywanie...')).toBeInTheDocument()
+    })
+
+    // Should disable button during logout
+    await waitFor(() => {
+      expect(logoutButton).toBeDisabled()
+    })
+
+    // Resolve logout and trigger SIGNED_OUT event
+    resolveLogout!({ error: null })
+    mockCallback('SIGNED_OUT', null)
+
+    await waitFor(() => {
+      expect(screen.queryByText('Wylogowywanie...')).not.toBeInTheDocument()
+    })
+  })
+
+  it('should handle logout errors gracefully and allow retry', async () => {
+    const user = userEvent.setup()
+    
+    // Mock authenticated session
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { 
+        session: { 
+          user: { 
+            id: '123', 
+            email: 'test@example.com',
+            aud: 'authenticated'
+          },
+          access_token: 'mock_token'
+        }
+      },
+      error: null
+    })
+
+    // Mock logout error
+    vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({
+      error: { message: 'Network error' }
+    })
+
+    render(<TestApp showDashboard={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Marmaid Dashboard')).toBeInTheDocument()
+    })
+    
+    // Click logout
+    const logoutButton = screen.getByTestId('logout-button')
+    await user.click(logoutButton)
+    
+    // Should show error message
+    await waitFor(() => {
+      expect(screen.getByText(/wystąpił błąd podczas wylogowywania/i)).toBeInTheDocument()
+    })
+
+    // Button should be enabled for retry
+    expect(logoutButton).not.toBeDisabled()
+
+    // Mock successful retry
+    vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: null })
+    
+    // Click logout again to retry
+    await user.click(logoutButton)
+    
+    await waitFor(() => {
+      expect(supabase.auth.signOut).toHaveBeenCalledTimes(2)
+    })
+
+    // Error message should disappear
+    await waitFor(() => {
+      expect(screen.queryByText(/wystąpił błąd podczas wylogowywania/i)).not.toBeInTheDocument()
+    })
+  })
+
+  it('should prevent multiple rapid logout clicks', async () => {
+    const user = userEvent.setup()
+    
+    // Mock authenticated session
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { 
+        session: { 
+          user: { 
+            id: '123', 
+            email: 'test@example.com',
+            aud: 'authenticated'
+          },
+          access_token: 'mock_token'
+        }
+      },
+      error: null
+    })
+
+    // Mock slow logout
+    let resolveLogout: (value: any) => void
+    const logoutPromise = new Promise(resolve => {
+      resolveLogout = resolve
+    })
+    vi.mocked(supabase.auth.signOut).mockReturnValue(logoutPromise)
+
+    render(<TestApp showDashboard={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Marmaid Dashboard')).toBeInTheDocument()
+    })
+    
+    const logoutButton = screen.getByTestId('logout-button')
+    
+    // Click logout multiple times rapidly
+    await user.click(logoutButton)
+    await user.click(logoutButton)
+    await user.click(logoutButton)
+    
+    // Should only call signOut once
+    expect(supabase.auth.signOut).toHaveBeenCalledTimes(1)
+
+    // Resolve logout
+    resolveLogout!({ error: null })
+  })
+
+  it('should have proper accessibility attributes for logout button', async () => {
+    // Mock authenticated session
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: { 
+        session: { 
+          user: { 
+            id: '123', 
+            email: 'test@example.com',
+            aud: 'authenticated'
+          },
+          access_token: 'mock_token'
+        }
+      },
+      error: null
+    })
+
+    render(<TestApp showDashboard={true} />)
+
+    await waitFor(() => {
+      expect(screen.getByText('Marmaid Dashboard')).toBeInTheDocument()
+    })
+    
+    const logoutButton = screen.getByTestId('logout-button')
+    
+    // Should have proper aria-label
+    expect(logoutButton).toHaveAttribute('aria-label', 'Wyloguj się')
+    
+    // Should be accessible by role
+    expect(screen.getByRole('button', { name: /wyloguj się/i })).toBeInTheDocument()
   })
 
   it('should switch between login and register forms', async () => {

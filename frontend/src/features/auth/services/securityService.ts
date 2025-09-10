@@ -150,7 +150,20 @@ class SecurityService {
     }
 
     const now = new Date()
-    const sessionAge = now.getTime() - new Date(session.user.created_at).getTime()
+    
+    // Get session start time from monitoring data
+    const monitoringDataString = localStorage.getItem('session_monitoring')
+    let sessionStartTime = now
+    if (monitoringDataString) {
+      try {
+        const monitoringData = JSON.parse(monitoringDataString)
+        sessionStartTime = new Date(monitoringData.loginTime)
+      } catch (e) {
+        console.warn('Failed to parse session monitoring data:', e)
+      }
+    }
+    
+    const sessionAge = now.getTime() - sessionStartTime.getTime()
     const inactiveTime = now.getTime() - this.lastActivity.getTime()
 
     // Check for session timeout

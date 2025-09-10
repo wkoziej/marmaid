@@ -4,14 +4,29 @@ import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card'
 import { ProfileForm } from '../../features/auth/ProfileForm'
 import { ClientList } from '../../features/clients/components/ClientList'
+import { ClientCreateForm } from '../../features/clients/components/ClientCreateForm'
+import { useNavigate } from 'react-router-dom'
 
 export function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, loggingOut } = useAuth()
+  const navigate = useNavigate()
   const [showProfile, setShowProfile] = useState(false)
   const [showClients, setShowClients] = useState(false)
-
+  const [showCreateClient, setShowCreateClient] = useState(false)
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null)
+  const [editingClientId, setEditingClientId] = useState<string | null>(null)
+  const [logoutError, setLogoutError] = useState<string | null>(null)
   const handleSignOut = async () => {
-    await signOut()
+    if (loggingOut) return // Prevent multiple clicks
+    
+    try {
+      setLogoutError(null)
+      await signOut()
+      // Navigation handled automatically by AppRoutes when user becomes null
+    } catch (error) {
+      console.error('Logout failed:', error)
+      setLogoutError('Wystąpił błąd podczas wylogowywania. Spróbuj ponownie.')
+    }
   }
 
   const handleProfileOpen = () => {
@@ -28,7 +43,43 @@ export function Dashboard() {
 
   const handleClientsClose = () => {
     setShowClients(false)
+    setShowCreateClient(false)
+    setSelectedClientId(null)
+    setEditingClientId(null)
   }
+
+  const handleCreateClient = () => {
+    setShowCreateClient(true)
+  }
+
+  const handleClientSelect = (client: any) => {
+    setSelectedClientId(client.id)
+  }
+
+  const handleEditClient = (clientId: string) => {
+    setEditingClientId(clientId)
+  }
+
+  // Component for logout button with loading state
+  const LogoutButton = ({ className }: { className?: string }) => (
+    <div className="flex flex-col items-end">
+      <Button 
+        variant="outline" 
+        onClick={handleSignOut} 
+        disabled={loggingOut}
+        data-testid="logout-button"
+        className={className}
+        aria-label={loggingOut ? 'Wylogowywanie...' : 'Wyloguj się'}
+      >
+        {loggingOut ? 'Wylogowywanie...' : 'Wyloguj się'}
+      </Button>
+      {logoutError && (
+        <div className="text-sm text-red-600 mt-1 max-w-xs text-right">
+          {logoutError}
+        </div>
+      )}
+    </div>
+  )
 
   if (showProfile) {
     return (
@@ -40,9 +91,7 @@ export function Dashboard() {
               <Button variant="outline" onClick={handleProfileClose}>
                 Powrót do Dashboard
               </Button>
-              <Button variant="outline" onClick={handleSignOut}>
-                Wyloguj się
-              </Button>
+              <LogoutButton />
             </div>
           </div>
         </header>
@@ -62,20 +111,31 @@ export function Dashboard() {
       <div className="min-h-screen bg-background">
         <header className="border-b">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Zarządzanie klientami</h1>
+            <h1 className="text-2xl font-bold" data-testid="client-management-heading">
+              {showCreateClient ? 'Dodaj nowego klienta' : 'Zarządzanie klientami'}
+            </h1>
             <div className="flex items-center space-x-4">
               <Button variant="outline" onClick={handleClientsClose}>
                 Powrót do Dashboard
               </Button>
-              <Button variant="outline" onClick={handleSignOut}>
-                Wyloguj się
-              </Button>
+              <LogoutButton />
             </div>
           </div>
         </header>
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <ClientList />
+          {showCreateClient ? (
+            <ClientCreateForm 
+              onSuccess={() => setShowCreateClient(false)}
+              onCancel={() => setShowCreateClient(false)}
+            />
+          ) : (
+            <ClientList 
+              onCreateClient={handleCreateClient}
+              onClientSelect={handleClientSelect}
+              onEditClient={handleEditClient}
+            />
+          )}
         </main>
       </div>
     )
@@ -85,14 +145,12 @@ export function Dashboard() {
     <div className="min-h-screen bg-background">
       <header className="border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Marmaid Dashboard</h1>
+          <h1 className="text-2xl font-bold" data-testid="dashboard-heading">Marmaid Dashboard</h1>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground" data-testid="user-email">
               {user?.email}
             </span>
-            <Button variant="outline" onClick={handleSignOut}>
-              Wyloguj się
-            </Button>
+            <LogoutButton />
           </div>
         </div>
       </header>
@@ -107,7 +165,7 @@ export function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" onClick={handleClientsOpen}>
+              <Button className="w-full" onClick={handleClientsOpen} data-testid="manage-clients-button">
                 Zarządzaj klientami
               </Button>
             </CardContent>

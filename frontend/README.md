@@ -55,3 +55,13 @@ src/
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 - `npm run test` - Run tests with Vitest
+
+## Development Standards
+
+**IMPORTANT**: All code must follow our [Coding Standards](../docs/architecture/coding-standards.md), including:
+
+- **E2E Test Selectors**: Use `data-testid` attributes with kebab-case naming for all interactive elements in E2E tests
+- **Component Testing**: Prefer `getByTestId()` for stable test selectors
+- **TypeScript**: Explicit typing, proper error handling, no `any` types
+- **React**: Functional components, custom hooks, proper dependency arrays
+- **Forms**: React Hook Form + Zod validation schemas

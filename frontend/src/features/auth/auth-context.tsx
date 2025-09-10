@@ -9,6 +9,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   useEffect(() => {
     // Initialize security service
@@ -41,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         // Handle security and audit events
         if (session?.user && event === 'SIGNED_IN') {
-          auditService.initialize()
+          await auditService.initialize()
           await auditService.logAuth('sign_in', true, {
             provider: session.user.app_metadata?.provider || 'email',
             event_type: event
@@ -53,6 +54,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Clear sensitive data on logout
           localStorage.removeItem('session_monitoring')
           sessionStorage.clear()
+          // Reset logout loading state
+          setLoggingOut(false)
         }
       }
     )
@@ -95,10 +98,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    // Log sign out attempt
-    await auditService.logAuth('sign_out_attempt', true)
-    
-    await supabase.auth.signOut()
+    try {
+      setLoggingOut(true)
+      
+      // Log sign out attempt
+      await auditService.logAuth('sign_out_attempt', true)
+      
+      const { error } = await supabase.auth.signOut()
+      
+      if (error) {
+        console.error('Logout error:', error)
+        await auditService.logAuth('sign_out_error', false, {
+          error: error.message
+        })
+        setLoggingOut(false) // Reset only on error
+        throw error
+      }
+
+      // Log successful sign out
+      await auditService.logAuth('sign_out_success', true)
+      
+      // Don't reset loggingOut here - let the auth state change handler do it
+    } catch (error) {
+      console.error('Sign out failed:', error)
+      setLoggingOut(false) // Reset on error
+      throw error
+    }
   }
 
   // Security functions
@@ -126,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     session,
     loading,
+    loggingOut,
     signUp,
     signIn,
     signOut,

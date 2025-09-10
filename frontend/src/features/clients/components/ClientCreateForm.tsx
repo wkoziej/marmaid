@@ -161,7 +161,7 @@ export function ClientCreateForm({ onSuccess, onCancel }: ClientCreateFormProps)
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle>Dodaj nowego klienta</CardTitle>
+        <CardTitle data-testid="create-client-heading">Dodaj nowego klienta</CardTitle>
         <CardDescription>
           Wprowadź podstawowe informacje o kliencie
         </CardDescription>
@@ -188,6 +188,7 @@ export function ClientCreateForm({ onSuccess, onCancel }: ClientCreateFormProps)
                     id="name"
                     type="text"
                     placeholder="np. Jan Kowalski"
+                    data-testid="client-name-input"
                     {...register('profile.name')}
                     className={errors.profile?.name ? 'border-red-500' : ''}
                   />
@@ -204,6 +205,7 @@ export function ClientCreateForm({ onSuccess, onCancel }: ClientCreateFormProps)
                     id="email"
                     type="email"
                     placeholder="jan.kowalski@example.com"
+                    data-testid="client-email-input"
                     {...register('profile.email')}
                     className={errors.profile?.email ? 'border-red-500' : ''}
                   />
@@ -220,6 +222,7 @@ export function ClientCreateForm({ onSuccess, onCancel }: ClientCreateFormProps)
                     id="phone"
                     type="tel"
                     placeholder="+48 123 456 789"
+                    data-testid="client-phone-input"
                     {...register('profile.phone')}
                     className={errors.profile?.phone ? 'border-red-500' : ''}
                   />
@@ -464,6 +467,7 @@ export function ClientCreateForm({ onSuccess, onCancel }: ClientCreateFormProps)
               type="submit"
               disabled={isSubmitting}
               className="flex-1 sm:flex-initial"
+              data-testid="create-client-submit-button"
             >
               {isSubmitting ? 'Zapisywanie...' : 'Utwórz klienta'}
             </Button>
@@ -484,6 +488,7 @@ export function ClientCreateForm({ onSuccess, onCancel }: ClientCreateFormProps)
               variant="outline"
               onClick={handleCancel}
               disabled={isSubmitting}
+              data-testid="create-client-cancel-button"
             >
               Anuluj
             </Button>

@@ -1,22 +1,22 @@
 import { z } from 'zod'
 
 export const loginSchema = z.object({
-  email: z.string().email('Wprowadź prawidłowy adres email'),
-  password: z.string().min(1, 'Hasło jest wymagane'),
+  email: z.string().min(1, 'EMAIL_REQUIRED').email('EMAIL_INVALID'),
+  password: z.string().min(1, 'PASSWORD_REQUIRED'),
 })
 
 export const registerSchema = z.object({
-  email: z.string().email('Wprowadź prawidłowy adres email'),
+  email: z.string().min(1, 'EMAIL_REQUIRED').email('EMAIL_INVALID'),
   password: z
     .string()
-    .min(6, 'Hasło musi mieć co najmniej 6 znaków')
+    .min(6, 'PASSWORD_TOO_SHORT')
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Hasło musi zawierać co najmniej jedną małą literę, wielką literę i cyfrę'
+      'PASSWORD_COMPLEXITY'
     ),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: 'Hasła nie są zgodne',
+  message: 'PASSWORD_MISMATCH',
   path: ['confirmPassword'],
 })
 

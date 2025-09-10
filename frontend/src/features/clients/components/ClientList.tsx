@@ -173,7 +173,7 @@ export function ClientList({ onClientSelect, onCreateClient, onEditClient }: Cli
               <CardTitle>Klienci ({filteredClients.length})</CardTitle>
               <CardDescription>Zarządzaj listą swoich klientów</CardDescription>
             </div>
-            <Button onClick={onCreateClient}>
+            <Button onClick={onCreateClient} data-testid="add-client-button">
               Dodaj klienta
             </Button>
           </div>
@@ -189,6 +189,7 @@ export function ClientList({ onClientSelect, onCreateClient, onEditClient }: Cli
                 placeholder="Nazwa, email, telefon..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                data-testid="client-search-input"
               />
             </div>
 
@@ -199,6 +200,7 @@ export function ClientList({ onClientSelect, onCreateClient, onEditClient }: Cli
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                data-testid="client-status-filter"
               >
                 <option value="all">Wszystkie</option>
                 <option value="active">Aktywni</option>
@@ -215,6 +217,7 @@ export function ClientList({ onClientSelect, onCreateClient, onEditClient }: Cli
                 placeholder="Wpisz tag..."
                 value={tagFilter}
                 onChange={(e) => setTagFilter(e.target.value)}
+                data-testid="client-tag-filter"
               />
             </div>
           </div>
@@ -225,7 +228,7 @@ export function ClientList({ onClientSelect, onCreateClient, onEditClient }: Cli
               {clients.length === 0 ? (
                 <>
                   <p className="text-muted-foreground mb-4">Nie masz jeszcze żadnych klientów</p>
-                  <Button onClick={onCreateClient}>
+                  <Button onClick={onCreateClient} data-testid="add-first-client-button">
                     Dodaj pierwszego klienta
                   </Button>
                 </>

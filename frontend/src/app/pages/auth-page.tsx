@@ -21,6 +21,7 @@ export function AuthPage() {
                 variant="outline" 
                 onClick={() => setMode('register')}
                 className="w-full"
+                data-testid="switch-to-register-button"
               >
                 Utwórz konto
               </Button>
@@ -34,6 +35,7 @@ export function AuthPage() {
                 variant="outline" 
                 onClick={() => setMode('login')}
                 className="w-full"
+                data-testid="switch-to-login-button"
               >
                 Zaloguj się
               </Button>

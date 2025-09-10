@@ -28,10 +28,23 @@ export function useClients(therapistId: string | null) {
   return useQuery({
     queryKey: clientQueryKeys.list(therapistId || ''),
     queryFn: async () => {
-      if (!therapistId) throw new Error('Therapist ID is required');
+      console.log('🔍 useClients: Fetching clients for therapist:', therapistId);
+      if (!therapistId) {
+        console.warn('🔍 useClients: No therapist ID provided');
+        throw new Error('Therapist ID is required');
+      }
       
       const response = await clientService.getClientsByTherapistId(therapistId);
-      if (response.error) throw response.error;
+      console.log('🔍 useClients: Response:', { 
+        hasData: !!response.data, 
+        dataLength: response.data?.length, 
+        hasError: !!response.error 
+      });
+      
+      if (response.error) {
+        console.error('🔍 useClients: Error:', response.error);
+        throw response.error;
+      }
       
       return response.data || [];
     },

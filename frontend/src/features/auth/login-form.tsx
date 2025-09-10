@@ -1,4 +1,17 @@
 import { useState } from 'react'
+
+// Error code to message translator
+const translateErrorCode = (code: string): string => {
+  const errorMessages: Record<string, string> = {
+    EMAIL_REQUIRED: 'Email jest wymagany',
+    EMAIL_INVALID: 'Wprowadź prawidłowy adres email',
+    PASSWORD_REQUIRED: 'Hasło jest wymagane',
+    PASSWORD_TOO_SHORT: 'Hasło musi mieć co najmniej 6 znaków',
+    PASSWORD_COMPLEXITY: 'Hasło musi zawierać co najmniej jedną małą literę, wielką literę i cyfrę',
+    PASSWORD_MISMATCH: 'Hasła nie są zgodne'
+  }
+  return errorMessages[code] || code
+}
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { LoginFormData } from './auth-schemas'
@@ -20,6 +33,7 @@ export function LoginForm() {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    mode: 'onChange', // Enable real-time validation
   })
 
   const onSubmit = async (data: LoginFormData) => {
@@ -41,7 +55,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader className="text-center">
-        <CardTitle>Zaloguj się do Marmaid</CardTitle>
+        <CardTitle data-testid="login-heading">Zaloguj się do Marmaid</CardTitle>
         <CardDescription>
           Wprowadź swoje dane, aby uzyskać dostęp do konta
         </CardDescription>
@@ -54,11 +68,12 @@ export function LoginForm() {
               id="email"
               type="email"
               placeholder="twoj@email.com"
+              data-testid="email-input"
               {...register('email')}
               disabled={isLoading}
             />
             {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
+              <p className="text-sm text-destructive" data-testid="email-validation-error">{translateErrorCode(errors.email.message || '')}</p>
             )}
           </div>
 
@@ -68,21 +83,22 @@ export function LoginForm() {
               id="password"
               type="password"
               placeholder="Wprowadź hasło"
+              data-testid="password-input"
               {...register('password')}
               disabled={isLoading}
             />
             {errors.password && (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
+              <p className="text-sm text-destructive" data-testid="password-validation-error">{translateErrorCode(errors.password.message || '')}</p>
             )}
           </div>
 
           {error && (
-            <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+            <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md" data-testid="login-error-message">
               {error}
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading} data-testid="login-submit-button">
             {isLoading ? 'Logowanie...' : 'Zaloguj się'}
           </Button>
         </form>
