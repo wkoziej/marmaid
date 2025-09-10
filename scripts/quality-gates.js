@@ -170,9 +170,7 @@ async function runQualityGates(mode = 'ci') {
   allPassed = allPassed && lintResult.success;
   
   // 2. TypeScript type checking
-  const typecheckCommand = isPreCommit && changedFiles.length > 0
-    ? `npx tsc --noEmit ${changedFiles.join(' ')}`
-    : 'npm run typecheck';
+  const typecheckCommand = 'npm run typecheck';
     
   const typecheckResult = executeCommand(typecheckCommand, 'Running TypeScript type check');
   results.push({ name: 'TypeCheck', success: typecheckResult.success });
