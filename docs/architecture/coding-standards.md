@@ -250,6 +250,96 @@ const handleLogin = async (data: LoginData) => {
 
 ## Testing Standards
 
+### E2E Test Selector Standardization
+
+#### Test Attribute Standards
+```typescript
+// ✅ DO: Use data-testid for stable selectors
+<button 
+  data-testid="login-submit-button"
+  className="btn-primary"
+>
+  Zaloguj się
+</button>
+
+<input 
+  data-testid="email-input"
+  type="email" 
+  name="email"
+/>
+
+// ✅ DO: Use kebab-case for data-testid values
+<div data-testid="client-management-section">
+  <h2 data-testid="client-management-heading">Zarządzanie klientami</h2>
+</div>
+```
+
+#### E2E Test Implementation
+```typescript
+// ✅ DO: Use getByTestId() for stable selectors
+test('user can login with valid credentials', async ({ page }) => {
+  await page.getByTestId('email-input').fill('test@example.com')
+  await page.getByTestId('password-input').fill('password123')
+  await page.getByTestId('login-submit-button').click()
+  
+  await expect(page.getByTestId('dashboard-heading')).toBeVisible()
+})
+
+// ❌ DON'T: Use language-dependent selectors
+await page.getByRole('button', { name: 'Zaloguj się' }).click() // Breaks with UI text changes
+await page.getByText('Zarządzanie klientami').click() // Language-dependent
+
+// ✅ DO: Use stable data-testid selectors instead
+await page.getByTestId('login-submit-button').click()
+await page.getByTestId('client-management-link').click()
+```
+
+#### Data-TestId Naming Conventions
+```typescript
+// ✅ DO: Descriptive, semantic naming
+data-testid="login-submit-button"        // Action + element type
+data-testid="email-input"               // Field name + element type
+data-testid="client-list-item"          // Context + element type
+data-testid="add-client-form"           // Action + context + element type
+data-testid="navigation-dashboard"      // Section + target
+
+// ❌ DON'T: Generic or unclear naming
+data-testid="button1"                   // Not descriptive
+data-testid="loginBtn"                  // Use kebab-case, not camelCase
+data-testid="email_input"               // Use kebab-case, not snake_case
+```
+
+#### Component Integration Rules
+```typescript
+// ✅ DO: Add data-testid to interactive elements used in E2E tests
+interface ButtonProps {
+  testId?: string
+  children: React.ReactNode
+  onClick: () => void
+}
+
+export const Button: React.FC<ButtonProps> = ({ 
+  testId, 
+  children, 
+  onClick 
+}) => {
+  return (
+    <button 
+      data-testid={testId}
+      onClick={onClick}
+      className="btn-primary"
+    >
+      {children}
+    </button>
+  )
+}
+
+// Usage in forms
+<Button testId="save-client-button" onClick={handleSave}>
+  Zapisz klienta
+</Button>
+```
+
 ### Component Testing
 ```typescript
 // ✅ DO: Test user interactions, not implementation
@@ -258,14 +348,24 @@ import { render, screen, userEvent } from '@testing-library/react'
 test('allows user to login with valid credentials', async () => {
   render(<LoginForm onSubmit={mockSubmit} />)
   
-  await userEvent.type(screen.getByLabelText(/email/i), 'test@example.com')
-  await userEvent.type(screen.getByLabelText(/password/i), 'password123')
-  await userEvent.click(screen.getByRole('button', { name: /login/i }))
+  // ✅ PREFER: Use data-testid when available
+  await userEvent.type(screen.getByTestId('email-input'), 'test@example.com')
+  await userEvent.type(screen.getByTestId('password-input'), 'password123')
+  await userEvent.click(screen.getByTestId('login-submit-button'))
   
   expect(mockSubmit).toHaveBeenCalledWith({
     email: 'test@example.com',
     password: 'password123'
   })
+})
+
+// ✅ FALLBACK: Use accessible queries when data-testid not available
+test('displays validation errors', async () => {
+  render(<LoginForm onSubmit={mockSubmit} />)
+  
+  await userEvent.click(screen.getByRole('button', { name: /login/i }))
+  
+  expect(screen.getByText(/email is required/i)).toBeInTheDocument()
 })
 ```
 

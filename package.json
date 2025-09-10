@@ -3,18 +3,26 @@
   "version": "1.0.0",
   "description": "Marmaid - Visualization tool for Marma points for therapists",
   "private": true,
+  "type": "module",
   "scripts": {
     "setup": "./scripts/setup-development.sh",
-    "dev": "./scripts/start-development.sh",
-    "dev:reset": "supabase db reset && cd frontend && npm run dev",
-    "test": "cd frontend && npm run test",
-    "test:unit": "cd frontend && npm run test:unit", 
-    "test:integration": "cd frontend && npm run test:integration",
-    "test:coverage": "cd frontend && npm run test:coverage",
-    "build": "cd frontend && npm run build",
-    "lint": "cd frontend && npm run lint",
-    "typecheck": "cd frontend && npm run typecheck",
-    "quality-gates": "cd frontend && npm run quality-gates",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:unit": "VITEST_TEST_TYPE=unit vitest run",
+    "test:integration": "VITEST_TEST_TYPE=integration vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "quality-gates": "node scripts/quality-gates.js",
+    "precommit": "node scripts/quality-gates.js --pre-commit",
+    "hooks:install": "git config core.hooksPath .githooks && chmod +x .githooks/pre-commit",
+    "hooks:uninstall": "git config --unset core.hooksPath",
+    "frontend:dev": "./scripts/start-development.sh",
+    "frontend:build": "cd frontend && npm run build",
+    "frontend:test": "cd frontend && npm run test",
     "env:test": "./scripts/use-test.sh",
     "env:prod": "./scripts/use-production.sh",
     "env:local": "./scripts/use-local.sh",
@@ -22,19 +30,28 @@
     "db:push:test": "supabase link --project-ref myxicttnpflkwnofbhci && supabase db push",
     "db:push:prod": "supabase link --project-ref aajurxtbngbixsdptfzz && supabase db push"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/your-org/marmaid.git"
+  "dependencies": {
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
   },
-  "keywords": [
-    "marma",
-    "therapy",
-    "visualization",
-    "react",
-    "supabase"
-  ],
-  "author": "Your Team",
-  "license": "UNLICENSED",
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.39.1",
+    "vite": "^7.1.2",
+    "vitest": "^3.2.4"
+  },
   "workspaces": [
     "frontend"
   ]
