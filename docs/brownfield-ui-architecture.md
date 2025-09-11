@@ -10,9 +10,9 @@ Focused na obszarach istotnych dla: **Enhancement UI - transformacja z placehold
 
 ### Change Log
 
-| Date | Version | Description | Author |
-|------|---------|-------------|--------|
-| 2024-12-29 | 1.0 | Initial brownfield analysis | BMad Master |
+| Date       | Version | Description                 | Author      |
+| ---------- | ------- | --------------------------- | ----------- |
+| 2024-12-29 | 1.0     | Initial brownfield analysis | BMad Master |
 
 ## Quick Reference - Key Files and Entry Points
 
@@ -46,23 +46,23 @@ Based on planned UI transformation, these areas will be heavily modified:
 
 ### Actual Tech Stack (from package.json)
 
-| Category | Technology | Version | Notes |
-|----------|------------|---------|-------|
-| Runtime | React | 19.1.1 | Latest React with concurrent features |
-| Build | Vite | 7.1.2 | Fast dev server, runs on port 5174 |
-| Styling | TailwindCSS | 4.1.12 | Latest v4 with CSS @layer |
-| UI Components | shadcn/ui | Custom | Card, Button, Input, Label, Textarea |
-| Icons | lucide-react | 0.542.0 | React icon library |
-| State Management | @tanstack/react-query | 5.85.6 | Server state management |
-| Forms | react-hook-form + zod | 7.62.0 + 4.1.5 | Form handling + validation |
-| Routing | react-router-dom | 7.8.2 | Client-side routing |
-| Backend | @supabase/supabase-js | 2.56.1 | Database and auth |
-| Testing | Vitest | 3.2.4 | Unit and integration tests |
+| Category         | Technology            | Version        | Notes                                 |
+| ---------------- | --------------------- | -------------- | ------------------------------------- |
+| Runtime          | React                 | 19.1.1         | Latest React with concurrent features |
+| Build            | Vite                  | 7.1.2          | Fast dev server, runs on port 5174    |
+| Styling          | TailwindCSS           | 4.1.12         | Latest v4 with CSS @layer             |
+| UI Components    | shadcn/ui             | Custom         | Card, Button, Input, Label, Textarea  |
+| Icons            | lucide-react          | 0.542.0        | React icon library                    |
+| State Management | @tanstack/react-query | 5.85.6         | Server state management               |
+| Forms            | react-hook-form + zod | 7.62.0 + 4.1.5 | Form handling + validation            |
+| Routing          | react-router-dom      | 7.8.2          | Client-side routing                   |
+| Backend          | @supabase/supabase-js | 2.56.1         | Database and auth                     |
+| Testing          | Vitest                | 3.2.4          | Unit and integration tests            |
 
 ### Repository Structure Reality Check
 
 - **Type**: Monorepo with separate frontend/ folder
-- **Package Manager**: npm 
+- **Package Manager**: npm
 - **Notable**: Frontend isolated in `frontend/` subfolder, sibling to `docs/`, `supabase/`
 
 ## Source Tree and Module Organization
@@ -102,14 +102,16 @@ marmaid/
 ### Key Modules and Their Purpose
 
 #### ✅ **Existing & Working**
+
 - **Authentication**: `src/features/auth/` - Complete module with login, register, profile
 - **UI System**: `src/components/ui/` - shadcn/ui components with consistent styling
 - **Route Protection**: `src/lib/auth-guard.tsx` - Working auth guards
 - **State Management**: React Query setup with proper error handling and retry logic
 
 #### ❌ **Missing/Placeholder Features**
+
 - **Client Management**: Feature not implemented (needs `src/features/clients/`)
-- **Session Planning**: Feature not implemented (needs `src/features/sessions/`)  
+- **Session Planning**: Feature not implemented (needs `src/features/sessions/`)
 - **3D Visualization**: Feature not implemented (needs `src/features/visualization/`)
 - **Navigation System**: No tab navigation component exists
 
@@ -123,6 +125,7 @@ marmaid/
 ### Missing Models (Will Need Implementation)
 
 Based on PRD requirements:
+
 - **Client** model (patient profiles, intake responses)
 - **Session** model (therapy sessions, marma points used)
 - **MarmaPoint** model (point definitions by school)
@@ -138,12 +141,14 @@ Based on PRD requirements:
 
 ### Design System (Existing)
 
-**Color Palette**: 
+**Color Palette**:
+
 - Based on CSS custom properties in `src/index.css`
 - Neutral grays with dark mode support
 - **Assessment**: Currently generic - not wellness/therapeutic focused
 
 **Components**:
+
 - Button (default, secondary, outline variants)
 - Card system (header, content, footer)
 - Form inputs (Input, Textarea, Label)
@@ -164,7 +169,8 @@ return <Dashboard />
 ### Dashboard Current State
 
 **Layout**: 2x2 grid of cards on desktop (4 cards total)
-- "Klienci" - disabled placeholder  
+
+- "Klienci" - disabled placeholder
 - "Sesje" - disabled placeholder
 - "Wizualizacja" - disabled placeholder
 - "Ustawienia" - only working button (profile management)
@@ -198,31 +204,33 @@ return <Dashboard />
 
 ### External Services
 
-| Service | Purpose | Integration Type | Key Files |
-|---------|---------|------------------|-----------|
-| Supabase | Database + Auth | SDK | `src/lib/supabase.ts` |
-| Tailwind | Styling | Build-time | `tailwind.config.js` |
-| React Router | Client routing | Runtime | `src/App.tsx` |
+| Service      | Purpose         | Integration Type | Key Files             |
+| ------------ | --------------- | ---------------- | --------------------- |
+| Supabase     | Database + Auth | SDK              | `src/lib/supabase.ts` |
+| Tailwind     | Styling         | Build-time       | `tailwind.config.js`  |
+| React Router | Client routing  | Runtime          | `src/App.tsx`         |
 
 ### Missing Integrations (Per Tech Stack)
 
-| Service | Purpose | Status | Needed For |
-|---------|---------|--------|------------|
-| three.js | 3D Visualization | ❌ Not installed | Marma point visualization |
-| react-three-fiber | React 3D | ❌ Not installed | Interactive 3D models |
-| @react-three/drei | 3D Helpers | ❌ Not installed | 3D UI components |
-| react-svg-pan-zoom | 2D Pan/Zoom | ❌ Not installed | 2D body diagrams |
+| Service            | Purpose          | Status           | Needed For                |
+| ------------------ | ---------------- | ---------------- | ------------------------- |
+| three.js           | 3D Visualization | ❌ Not installed | Marma point visualization |
+| react-three-fiber  | React 3D         | ❌ Not installed | Interactive 3D models     |
+| @react-three/drei  | 3D Helpers       | ❌ Not installed | 3D UI components          |
+| react-svg-pan-zoom | 2D Pan/Zoom      | ❌ Not installed | 2D body diagrams          |
 
 ## Development and Deployment
 
 ### Local Development Setup
 
 **Working Setup**:
+
 ```bash
 cd frontend && npm run dev  # Starts on http://localhost:5174/
 ```
 
 **Known Issues**:
+
 - Port 5173 often occupied, auto-switches to 5174
 - No hot reload issues detected
 - TypeScript compilation works correctly
@@ -237,7 +245,7 @@ cd frontend && npm run dev  # Starts on http://localhost:5174/
 
 ```bash
 npm run dev              # Development server
-npm run build            # Production build  
+npm run build            # Production build
 npm run test             # Run all tests
 npm run test:unit        # Unit tests only
 npm run test:integration # Integration tests only
@@ -266,16 +274,19 @@ npm run preview          # Preview production build
 ### Files That Will Need Major Modification
 
 #### Navigation Architecture
+
 - `src/App.tsx` - Add nested routing for dashboard tabs
 - `src/app/pages/dashboard.tsx` - Complete redesign from cards to tabs
 - **New File**: `src/components/navigation/` - Tab navigation component
 
 #### New Feature Implementation
+
 - **New**: `src/features/clients/` - Complete client management module
 - **New**: `src/features/sessions/` - Session planning and tracking
 - **New**: `src/features/visualization/` - 3D/2D marma point visualization
 
 #### Routing Changes
+
 ```typescript
 // Current: Flat routing
 <Route path="/dashboard" element={<Dashboard />} />
@@ -292,16 +303,19 @@ npm run preview          # Preview production build
 ### New Dependencies Required
 
 #### 3D Visualization Stack
+
 ```bash
 npm install three @types/three @react-three/fiber @react-three/drei
 ```
 
 #### Enhanced UI Components
-```bash  
+
+```bash
 npm install @radix-ui/react-tabs @radix-ui/react-navigation-menu
 ```
 
 #### 2D Visualization (Optional)
+
 ```bash
 npm install react-svg-pan-zoom
 ```
@@ -322,7 +336,7 @@ npm install react-svg-pan-zoom
 # Start development
 cd frontend && npm run dev
 
-# Run tests while developing  
+# Run tests while developing
 npm run test:watch
 
 # Check types and lint
@@ -339,7 +353,7 @@ npm run test:integration   # Only integration tests
 ```bash
 # From project root
 ./scripts/use-local.sh     # Use local Supabase
-./scripts/use-test.sh      # Use test environment  
+./scripts/use-test.sh      # Use test environment
 ./scripts/use-production.sh # Use production environment
 ```
 
@@ -357,10 +371,11 @@ npm run test:integration   # Only integration tests
 This Marmaid frontend is a **solid foundation** with excellent development practices but requires **major feature implementation**. The authentication system is production-ready, but the core therapy management features (clients, sessions, 3D visualization) exist only as placeholder cards.
 
 **Immediate UI Enhancement Path**:
+
 1. **Navigation**: Transform dashboard from cards to tabbed interface
-2. **Client Management**: Build complete CRUD for patient management  
+2. **Client Management**: Build complete CRUD for patient management
 3. **Session Planning**: Create therapy session planning UI
 4. **3D Visualization**: Implement interactive marma point models
 5. **Design System**: Evolve from generic to wellness-focused theme
 
-The codebase follows React best practices and has excellent tooling. New features should follow the established patterns in the `auth/` module. 
+The codebase follows React best practices and has excellent tooling. New features should follow the established patterns in the `auth/` module.

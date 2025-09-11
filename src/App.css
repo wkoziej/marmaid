@@ -5,6 +5,19 @@
   text-align: center;
 }
 
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 0.5rem;
+  }
+}
+
 .App {
   display: flex;
   justify-content: center;
@@ -19,6 +32,22 @@
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
   background: white;
   max-width: 500px;
+  width: 100%;
+}
+
+/* Mobile card adjustments */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.5rem;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
 }
 
 .card h1 {
@@ -65,4 +94,50 @@
 
 .links a:hover {
   background: #2563eb;
+}
+
+/* Developer Info Responsive Styles */
+.dev-info-compact {
+  transition: all 0.2s ease;
+}
+
+.dev-info-compact:hover {
+  color: #374151;
+}
+
+.dev-info-detailed {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+/* Mobile adjustments for dev info */
+@media (max-width: 768px) {
+  .dev-info-compact {
+    font-size: 0.8em !important;
+    line-height: 1.3;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .dev-info-detailed {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dev-info-compact {
+    font-size: 0.75em !important;
+    padding: 0.25rem;
+  }
+
+  .dev-info-detailed {
+    padding: 0.5rem;
+    font-size: 0.85em;
+  }
+
+  .dev-info-detailed p {
+    margin: 0.15em 0;
+  }
 }

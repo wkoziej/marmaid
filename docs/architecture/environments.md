@@ -11,6 +11,7 @@ Marmaid uses three isolated environments for development, testing, and productio
 ## 🔧 Environment Configuration
 
 ### Environment Files
+
 - `.env.local` - Development (copied from .env.production or .env.test)
 - `.env.test` - Test environment variables
 - `.env.production` - Production environment variables
@@ -22,7 +23,7 @@ Use the unified CLI for all environment operations:
 ```bash
 # Switch environments
 ./scripts/env use test       # Switch to test environment
-./scripts/env use prod       # Switch to production environment  
+./scripts/env use prod       # Switch to production environment
 ./scripts/env use local      # Switch to local development
 
 # Check current status
@@ -42,6 +43,7 @@ Use the unified CLI for all environment operations:
 ## 🚀 Deployment Workflow
 
 ### 1. Development
+
 ```bash
 # Start local Supabase
 npx supabase start
@@ -51,6 +53,7 @@ cd frontend && npm run dev
 ```
 
 ### 2. Testing
+
 ```bash
 # Switch to test environment
 ./scripts/use-test.sh
@@ -60,6 +63,7 @@ npm run test:integration
 ```
 
 ### 3. Production Deployment
+
 ```bash
 # Link to production project
 npx supabase link --project-ref aajurxtbngbixsdptfzz --password [PROD_PASSWORD]
@@ -77,12 +81,14 @@ npm run build
 ## 📊 Database Migrations
 
 ### Creating Migrations
+
 ```bash
 npx supabase migration new migration_name
 # Edit: supabase/migrations/TIMESTAMP_migration_name.sql
 ```
 
 ### Testing Migrations
+
 ```bash
 # Link to test project
 npx supabase link --project-ref myxicttnpflkwnofbhci --password HcBvx3GVYiRKNs5a
@@ -92,6 +98,7 @@ npx supabase db push --password HcBvx3GVYiRKNs5a
 ```
 
 ### Production Migrations
+
 ```bash
 # Link to production
 npx supabase link --project-ref aajurxtbngbixsdptfzz --password [PROD_PASSWORD]
@@ -103,6 +110,7 @@ npx supabase db push --password [PROD_PASSWORD]
 ## 🔍 Environment Verification
 
 ### API Test Commands
+
 ```bash
 # Test environment API
 curl -H "apikey: [TEST_ANON_KEY]" "https://myxicttnpflkwnofbhci.supabase.co/rest/v1/therapists"
@@ -114,19 +122,22 @@ curl -H "apikey: [PROD_ANON_KEY]" "https://aajurxtbngbixsdptfzz.supabase.co/rest
 ## 🚨 Troubleshooting
 
 ### Network Connection Issues
+
 If CLI connection fails:
+
 ```bash
 # Add to /etc/hosts (requires sudo)
 echo "3.131.201.192 aws-1-us-east-2.pooler.supabase.com" | sudo tee -a /etc/hosts
 ```
 
 ### Authentication Issues
+
 - Verify database password in Supabase Dashboard → Settings → Database
 - Use explicit --password flag with CLI commands
 
 ## 🔐 Security Notes
 
 - Never commit database passwords to git
-- Store passwords in .env.* files (gitignored)
+- Store passwords in .env.\* files (gitignored)
 - Use different passwords for each environment
 - Regularly rotate database passwords

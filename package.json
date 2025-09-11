@@ -13,16 +13,15 @@
     "test:unit": "VITEST_TEST_TYPE=unit vitest run",
     "test:integration": "VITEST_TEST_TYPE=integration vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --config=playwright.config.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "quality-gates": "node scripts/quality-gates.js",
     "precommit": "node scripts/quality-gates.js --pre-commit",
     "hooks:install": "git config core.hooksPath .githooks && chmod +x .githooks/pre-commit",
     "hooks:uninstall": "git config --unset core.hooksPath",
-    "frontend:dev": "./scripts/start-development.sh",
-    "frontend:build": "cd frontend && npm run build",
-    "frontend:test": "cd frontend && npm run test",
     "env:test": "./scripts/use-test.sh",
     "env:prod": "./scripts/use-production.sh",
     "env:local": "./scripts/use-local.sh",
@@ -31,28 +30,37 @@
     "db:push:prod": "supabase link --project-ref aajurxtbngbixsdptfzz && supabase db push"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "@types/react-router-dom": "^5.3.3",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@playwright/test": "^1.55.0",
+    "@tailwindcss/postcss": "^4.1.13",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/coverage-v8": "^3.2.4",
+    "autoprefixer": "^10.4.21",
     "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "jsdom": "^26.1.0",
+    "playwright": "^1.55.0",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.13",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
     "vitest": "^3.2.4"
-  },
-  "workspaces": [
-    "frontend"
-  ]
+  }
 }

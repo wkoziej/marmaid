@@ -1,5 +1,7 @@
 # 4. Backend & Database (Supabase)
+
 ## 4.1 Model danych (propozycja MVP)
+
 - **users** (id, email, role: `therapist`|`client`, stripe_customer_id, created_at)
 - **therapists** (id -> users.id, profile, subscription_status)
 - **clients** (id, therapist_id, name, contact, intake_id?)
@@ -15,13 +17,15 @@
 > Uwaga: dane PII pacjentów ograniczamy do minimum. Dane zdrowotne w MVP nie wymagają certyfikacji, ale należy uwzględnić RODO.
 
 ## 4.2 API
-- Dostęp przez **PostgREST** (Supabase) – CRUD na tabelach z politykami RLS.  
+
+- Dostęp przez **PostgREST** (Supabase) – CRUD na tabelach z politykami RLS.
 - **Edge Functions** dla: Stripe (checkout, webhooks), importy KB, generowanie/odświeżanie embeddingów, ewentualny endpoint RAG.
 
 ## 4.3 RLS (Row-Level Security)
-- **therapist**: pełny dostęp tylko do własnych rekordów (clients, sessions, intakes, session_points).  
-- **client**: dostęp tylko do *własnego* intake i ewentualnego portalu (read-only).  
-- **public**: brak dostępu do danych wrażliwych.  
+
+- **therapist**: pełny dostęp tylko do własnych rekordów (clients, sessions, intakes, session_points).
+- **client**: dostęp tylko do _własnego_ intake i ewentualnego portalu (read-only).
+- **public**: brak dostępu do danych wrażliwych.
 - Polityki RLS muszą wiązać rekordy z `auth.uid()`.
 
 ---

@@ -9,7 +9,7 @@ import { resolve } from 'path';
 // Load environment variables from .env files
 function loadEnvFiles() {
   const envFiles = ['.env.test.local', '.env.local', '.env'];
-  
+
   for (const file of envFiles) {
     const filePath = resolve(file);
     if (existsSync(filePath)) {
@@ -38,7 +38,7 @@ const colors = {
   yellow: '\x1b[33m',
   blue: '\x1b[34m',
   reset: '\x1b[0m',
-  bold: '\x1b[1m'
+  bold: '\x1b[1m',
 };
 
 function log(message, color = colors.reset) {
@@ -69,7 +69,7 @@ function executeCommand(command, description, options = {}) {
       stdio: options.silent ? 'pipe' : 'inherit',
       cwd: process.cwd(),
       encoding: 'utf8',
-      ...options
+      ...options,
     });
     logSuccess(`${description} ✓`);
     return { success: true, output: result };
@@ -88,13 +88,16 @@ function executeCommand(command, description, options = {}) {
 // Get changed files for pre-commit mode
 function getChangedFiles() {
   try {
-    const stagedFiles = execSync('git diff --cached --name-only --diff-filter=ACM', {
-      encoding: 'utf8',
-      stdio: 'pipe'
-    }).trim();
-    
+    const stagedFiles = execSync(
+      'git diff --cached --name-only --diff-filter=ACM',
+      {
+        encoding: 'utf8',
+        stdio: 'pipe',
+      }
+    ).trim();
+
     if (!stagedFiles) return [];
-    
+
     return stagedFiles
       .split('\n')
       .filter(file => file.match(/\.(ts|tsx|js|jsx)$/))
@@ -108,132 +111,194 @@ function getChangedFiles() {
 // Get test files related to changed files
 function getRelatedTestFiles(changedFiles) {
   const testFiles = [];
-  
+
   changedFiles.forEach(file => {
     // Direct test files
-    if (file.includes('__tests__/') || file.includes('.test.') || file.includes('.spec.')) {
+    if (
+      file.includes('__tests__/') ||
+      file.includes('.test.') ||
+      file.includes('.spec.')
+    ) {
       testFiles.push(file);
       return;
     }
-    
+
     // Find related test files
     const baseName = file.replace(/\.(ts|tsx|js|jsx)$/, '');
     const dir = file.split('/').slice(0, -1).join('/');
-    
+
     // Look for test files in same directory or __tests__ subdirectory
     const possibleTestFiles = [
       `${baseName}.test.ts`,
       `${baseName}.test.tsx`,
       `${baseName}.spec.ts`,
       `${baseName}.spec.tsx`,
-      `${dir}/__tests__/${file.split('/').pop().replace(/\.(ts|tsx|js|jsx)$/, '')}.test.ts`,
-      `${dir}/__tests__/${file.split('/').pop().replace(/\.(ts|tsx|js|jsx)$/, '')}.test.tsx`
+      `${dir}/__tests__/${file
+        .split('/')
+        .pop()
+        .replace(/\.(ts|tsx|js|jsx)$/, '')}.test.ts`,
+      `${dir}/__tests__/${file
+        .split('/')
+        .pop()
+        .replace(/\.(ts|tsx|js|jsx)$/, '')}.test.tsx`,
     ];
-    
+
     possibleTestFiles.forEach(testFile => {
       if (existsSync(testFile)) {
         testFiles.push(resolve(testFile));
       }
     });
   });
-  
+
   return [...new Set(testFiles)]; // Remove duplicates
 }
 
 // Main quality gate checks
 async function runQualityGates(mode = 'ci') {
   log(`${colors.bold}🔍 Running Quality Gates (${mode} mode)${colors.reset}`);
-  
+
   const isPreCommit = mode === 'pre-commit';
   const changedFiles = isPreCommit ? getChangedFiles() : [];
-  
+
   if (isPreCommit && changedFiles.length === 0) {
     logWarning('No staged files to check');
     return true;
   }
-  
+
   if (isPreCommit) {
     log(`📝 Checking ${changedFiles.length} staged files:`, colors.blue);
-    changedFiles.forEach(file => log(`  - ${file.replace(process.cwd() + '/', '')}`));
+    changedFiles.forEach(file =>
+      log(`  - ${file.replace(process.cwd() + '/', '')}`)
+    );
   }
-  
+
   let allPassed = true;
   const results = [];
-  
+
   // 1. ESLint
-  const lintCommand = isPreCommit && changedFiles.length > 0
-    ? `npx eslint ${changedFiles.join(' ')}`
-    : 'npm run lint';
-    
+  const lintCommand =
+    isPreCommit && changedFiles.length > 0
+      ? `npx eslint ${changedFiles.join(' ')}`
+      : 'npm run lint';
+
   const lintResult = executeCommand(lintCommand, 'Running ESLint');
   results.push({ name: 'ESLint', success: lintResult.success });
   allPassed = allPassed && lintResult.success;
-  
-  // 2. TypeScript type checking
+
+  // 2. Prettier formatting check
+  const prettierCommand = 'npm run format:check';
+
+  const prettierResult = executeCommand(
+    prettierCommand,
+    'Checking code formatting with Prettier'
+  );
+  results.push({ name: 'Prettier', success: prettierResult.success });
+  allPassed = allPassed && prettierResult.success;
+
+  // 3. TypeScript type checking
   const typecheckCommand = 'npm run typecheck';
-    
-  const typecheckResult = executeCommand(typecheckCommand, 'Running TypeScript type check');
+
+  const typecheckResult = executeCommand(
+    typecheckCommand,
+    'Running TypeScript type check'
+  );
   results.push({ name: 'TypeCheck', success: typecheckResult.success });
   allPassed = allPassed && typecheckResult.success;
-  
-  // 3. Test Coverage
-  const coverageCommand = isPreCommit ? 'npm run test:coverage' : 'npm run test:coverage';
-  const coverageResult = executeCommand(coverageCommand, 'Running test coverage check', { silent: true });
-  
+
+  // 4. Test Coverage
+  const coverageCommand = isPreCommit
+    ? 'npm run test:coverage'
+    : 'npm run test:coverage';
+  const coverageResult = executeCommand(
+    coverageCommand,
+    'Running test coverage check',
+    { silent: true }
+  );
+
   // Parse coverage from output to check thresholds
   let coveragePassed = coverageResult.success;
   if (coverageResult.success && coverageResult.output) {
-    const coverageMatch = coverageResult.output.match(/Statements\s*:\s*([\d.]+)%/);
+    const coverageMatch = coverageResult.output.match(
+      /Statements\s*:\s*([\d.]+)%/
+    );
     if (coverageMatch) {
       const coverage = parseFloat(coverageMatch[1]);
       const threshold = isPreCommit ? 45 : 45; // Match CI/CD threshold
       coveragePassed = coverage >= threshold;
       if (!coveragePassed) {
-        logError(`Coverage ${coverage}% is below ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`);
+        logError(
+          `Coverage ${coverage}% is below ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`
+        );
       } else {
-        logSuccess(`Coverage ${coverage}% meets ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`);
+        logSuccess(
+          `Coverage ${coverage}% meets ${isPreCommit ? 'pre-commit' : 'CI'} threshold ${threshold}%`
+        );
       }
     }
   }
   results.push({ name: 'Test Coverage', success: coveragePassed });
   allPassed = allPassed && coveragePassed;
 
-  // 4. Tests
+  // 5. Tests
   if (isPreCommit) {
     const allTestFiles = getRelatedTestFiles(changedFiles);
-    const unitTestFiles = allTestFiles.filter(file => !file.includes('integration'));
-    const integrationTestFiles = allTestFiles.filter(file => file.includes('integration'));
-    
+    const unitTestFiles = allTestFiles.filter(
+      file => !file.includes('integration')
+    );
+    const integrationTestFiles = allTestFiles.filter(file =>
+      file.includes('integration')
+    );
+
     // Run unit tests
     if (unitTestFiles.length > 0) {
       log(`🧪 Running ${unitTestFiles.length} unit tests`, colors.blue);
       const testCommand = `VITEST_TEST_TYPE=unit npx vitest run ${unitTestFiles.join(' ')}`;
-      const testResult = executeCommand(testCommand, 'Running related unit tests');
+      const testResult = executeCommand(
+        testCommand,
+        'Running related unit tests'
+      );
       results.push({ name: 'Unit Tests', success: testResult.success });
       allPassed = allPassed && testResult.success;
     } else {
       logWarning('No related unit test files found for changed files');
       results.push({ name: 'Unit Tests', success: true, skipped: true });
     }
-    
+
     // Run integration tests if any related files changed
     if (integrationTestFiles.length > 0) {
-      const hasSupabaseCredentials = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
-      
+      const hasSupabaseCredentials =
+        process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+
       if (!hasSupabaseCredentials) {
-        logWarning('Skipping integration tests: Supabase credentials not found');
-        results.push({ name: 'Integration Tests', success: true, skipped: true });
-      } else {
-        log(`🔗 Running ${integrationTestFiles.length} integration tests`, colors.blue);
-        const integrationCommand = `VITEST_TEST_TYPE=integration npx vitest run ${integrationTestFiles.join(' ')}`;
-        const integrationResult = executeCommand(integrationCommand, 'Running related integration tests', {
-          env: {
-            ...process.env,
-            VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-            VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-          }
+        logWarning(
+          'Skipping integration tests: Supabase credentials not found'
+        );
+        results.push({
+          name: 'Integration Tests',
+          success: true,
+          skipped: true,
         });
-        results.push({ name: 'Integration Tests', success: integrationResult.success });
+      } else {
+        log(
+          `🔗 Running ${integrationTestFiles.length} integration tests`,
+          colors.blue
+        );
+        const integrationCommand = `VITEST_TEST_TYPE=integration npx vitest run ${integrationTestFiles.join(' ')}`;
+        const integrationResult = executeCommand(
+          integrationCommand,
+          'Running related integration tests',
+          {
+            env: {
+              ...process.env,
+              VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+              VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+            },
+          }
+        );
+        results.push({
+          name: 'Integration Tests',
+          success: integrationResult.success,
+        });
         allPassed = allPassed && integrationResult.success;
       }
     } else {
@@ -242,33 +307,52 @@ async function runQualityGates(mode = 'ci') {
     }
   } else {
     // CI mode - run all tests
-    const unitTestResult = executeCommand('npm run test:unit', 'Running unit tests');
+    const unitTestResult = executeCommand(
+      'npm run test:unit',
+      'Running unit tests'
+    );
     results.push({ name: 'Unit Tests', success: unitTestResult.success });
     allPassed = allPassed && unitTestResult.success;
-    
+
     if (unitTestResult.success) {
       // Check if integration tests should run (requires database with applied migrations)
-      const hasSupabaseCredentials = process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
-      
+      const hasSupabaseCredentials =
+        process.env.VITE_SUPABASE_URL && process.env.VITE_SUPABASE_ANON_KEY;
+
       if (!hasSupabaseCredentials) {
-        logWarning('Skipping integration tests: Supabase credentials not found');
-        results.push({ name: 'Integration Tests', success: true, skipped: true });
-      } else {
-        logWarning('Integration tests require database with applied migrations from ../supabase/migrations/');
-        const integrationTestResult = executeCommand('npm run test:integration', 'Running integration tests', {
-          env: {
-            ...process.env,
-            // Ensure test environment variables are available
-            VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
-            VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
-          }
+        logWarning(
+          'Skipping integration tests: Supabase credentials not found'
+        );
+        results.push({
+          name: 'Integration Tests',
+          success: true,
+          skipped: true,
         });
-        results.push({ name: 'Integration Tests', success: integrationTestResult.success });
+      } else {
+        logWarning(
+          'Integration tests require database with applied migrations from ../supabase/migrations/'
+        );
+        const integrationTestResult = executeCommand(
+          'npm run test:integration',
+          'Running integration tests',
+          {
+            env: {
+              ...process.env,
+              // Ensure test environment variables are available
+              VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL,
+              VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
+            },
+          }
+        );
+        results.push({
+          name: 'Integration Tests',
+          success: integrationTestResult.success,
+        });
         allPassed = allPassed && integrationTestResult.success;
       }
     }
   }
-  
+
   // Summary
   log('\n📊 Quality Gates Summary:', colors.bold);
   results.forEach(result => {
@@ -280,13 +364,13 @@ async function runQualityGates(mode = 'ci') {
       log(`  ${colors.red}❌ ${result.name}: Failed${colors.reset}`);
     }
   });
-  
+
   if (allPassed) {
     logSuccess('\n🎉 All quality gates passed!');
   } else {
     logError('\n💥 Some quality gates failed!');
   }
-  
+
   return allPassed;
 }
 
@@ -294,7 +378,7 @@ async function runQualityGates(mode = 'ci') {
 async function main() {
   const args = process.argv.slice(2);
   const mode = args.includes('--pre-commit') ? 'pre-commit' : 'ci';
-  
+
   if (args.includes('--help') || args.includes('-h')) {
     console.log(`
 Quality Gates Script
@@ -312,7 +396,7 @@ Examples:
     `);
     process.exit(0);
   }
-  
+
   const success = await runQualityGates(mode);
   process.exit(success ? 0 : 1);
 }

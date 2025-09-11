@@ -85,24 +85,28 @@ frontend/
 ## Organizational Patterns
 
 ### Feature Module Structure
+
 Każdy moduł w `features/` zawiera:
+
 - `components/` - React components
 - `hooks/` - Custom hooks
 - `services/` - API calls, data fetching
 - `types.ts` - TypeScript definitions
 
 ### Import Conventions
+
 ```typescript
 // Absolute imports from src root
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/features/auth/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 
 // Relative imports within same feature
-import { LoginForm } from './components/LoginForm'
+import { LoginForm } from './components/LoginForm';
 ```
 
 ### File Naming
+
 - **Components**: PascalCase (`LoginForm.tsx`)
 - **Hooks**: camelCase z prefixem `use` (`useAuth.ts`)
 - **Services**: camelCase (`authService.ts`)
@@ -110,6 +114,7 @@ import { LoginForm } from './components/LoginForm'
 - **Utils**: camelCase (`formatDate.ts`)
 
 ### Backend Structure (Supabase)
+
 ```
 supabase/
 ├── migrations/                 # Database migrations
@@ -119,4 +124,4 @@ supabase/
 │   └── import-data/
 ├── seed.sql                   # Initial data
 └── config.toml               # Supabase config
-``` 
+```

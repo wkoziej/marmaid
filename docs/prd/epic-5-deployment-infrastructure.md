@@ -1,6 +1,7 @@
 # Epic 5: Deployment & Infrastructure
 
 ## Epic Goal
+
 Establish robust, scalable deployment pipelines and infrastructure that enable secure, reliable delivery of Marmaid application to test and production environments with proper CI/CD automation, monitoring, and operational excellence.
 
 ## Epic Description
@@ -12,13 +13,14 @@ As Marmaid evolves from development to production, we need professional deployme
 Building on our React + Supabase foundation (Epic 1), this epic establishes the deployment pipeline and infrastructure needed to deliver features from subsequent epics (Client Management, Therapy Planning) safely and reliably to end users. Our three-environment strategy includes:
 
 - **Development Environment**: Local Docker Supabase + React dev server for rapid development
-- **Test Environment**: GitHub Pages deployment from `test` branch + Supabase test project for validation  
+- **Test Environment**: GitHub Pages deployment from `test` branch + Supabase test project for validation
 - **Production Environment**: GitHub Pages deployment from `main` branch + Supabase production project
 
 **Environment Management:**
 The project includes a unified CLI (`scripts/env`) for seamless environment switching, database migrations, and deployment workflows. This infrastructure supports the complete development lifecycle from local coding to production deployment.
 
 **Success Criteria:**
+
 - Test environment enables continuous validation of new features
 - Production environment delivers reliable, secure service to therapists
 - CI/CD pipeline automates deployment with quality gates and safety measures
@@ -29,7 +31,8 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
 ## Stories
 
 ### 5.1 Test Environment Setup & CI/CD Pipeline
-- **User Story:** *As a development team*, we need a dedicated test environment with automated deployment pipeline so that we can continuously validate features before production release.
+
+- **User Story:** _As a development team_, we need a dedicated test environment with automated deployment pipeline so that we can continuously validate features before production release.
 - **Key Features:**
   - Supabase test project with isolated data (`myxicttnpflkwnofbhci.supabase.co`)
   - GitHub Pages deployment from `test` branch with automated CI/CD
@@ -39,7 +42,8 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
   - Test data seeding and environment isolation
 
 ### 5.2 Production Infrastructure & Deployment
-- **User Story:** *As a therapist user*, I need reliable, secure access to Marmaid application so that I can manage my practice without service disruptions or data concerns.
+
+- **User Story:** _As a therapist user_, I need reliable, secure access to Marmaid application so that I can manage my practice without service disruptions or data concerns.
 - **Key Features:**
   - Production Supabase project with security hardening (`aajurxtbngbixsdptfzz.supabase.co`)
   - GitHub Pages deployment from `main` branch with custom domain and SSL
@@ -49,16 +53,18 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
   - Zero-downtime deployment strategy
 
 ### 5.3 Development Environment & Local Workflow
-- **User Story:** *As a developer*, I need a complete local development environment so that I can efficiently develop and test features without external dependencies.
+
+- **User Story:** _As a developer_, I need a complete local development environment so that I can efficiently develop and test features without external dependencies.
 - **Key Features:**
   - Local Docker Supabase with complete database functionality
-  - Environment management CLI for local setup and data management  
+  - Environment management CLI for local setup and data management
   - Local migration testing and development workflow
   - Integrated development tools and debugging capabilities
   - Consistent local environment across team members
 
-### 5.4 Security & Compliance Infrastructure  
-- **User Story:** *As a practice owner*, I need assurance that my client data is protected by enterprise-grade security so that I can confidently store sensitive therapy information.
+### 5.4 Security & Compliance Infrastructure
+
+- **User Story:** _As a practice owner_, I need assurance that my client data is protected by enterprise-grade security so that I can confidently store sensitive therapy information.
 - **Key Features:**
   - Environment-specific security configurations and access controls
   - Automated security scanning in CI/CD pipeline
@@ -69,6 +75,7 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
 ## Acceptance Criteria
 
 ### Epic-Level Acceptance Criteria:
+
 1. **Local Development**: Fully functional local Docker Supabase environment with complete development toolchain
 2. **Test Environment**: GitHub Pages deployment from `test` branch with automated CI/CD pipeline and Supabase test project
 3. **Production Environment**: GitHub Pages deployment from `main` branch delivering 99.9% uptime with sub-3-second response times
@@ -77,30 +84,33 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
 6. **Deployment Safety**: CI/CD pipeline includes quality gates, automated testing, and safe migration procedures
 
 ## Technical Dependencies
+
 - Epic 1 completion (Authentication & Foundation) - **PREREQUISITE**
 - Docker and Docker Compose for local Supabase development
 - GitHub Actions for CI/CD pipeline automation
 - GitHub Pages for frontend hosting (test and production)
 - Supabase Pro plan for production workloads (existing: `aajurxtbngbixsdptfzz.supabase.co`)
-- Supabase test project (existing: `myxicttnpflkwnofbhci.supabase.co`)  
+- Supabase test project (existing: `myxicttnpflkwnofbhci.supabase.co`)
 - Domain registration and SSL certificate management (GitHub Pages integration)
 - Environment management CLI scripts (existing: `scripts/env`)
 - Database migration automation tooling
 
 ## Risks & Mitigation
+
 - **Risk:** Production deployment issues could impact therapist users
 - **Mitigation:** Blue-green deployments, comprehensive testing, gradual rollout strategy
-- **Risk:** Security vulnerabilities in infrastructure could expose sensitive data  
+- **Risk:** Security vulnerabilities in infrastructure could expose sensitive data
 - **Mitigation:** Security scanning, compliance frameworks, regular security audits
 - **Risk:** Infrastructure costs could escalate with user growth
 - **Mitigation:** Resource monitoring, auto-scaling policies, cost optimization reviews
 
 ## Definition of Done
+
 - [ ] Local development environment operational with Docker Supabase and environment CLI
-- [ ] Test environment operational with automated CI/CD pipeline from `test` branch 
+- [ ] Test environment operational with automated CI/CD pipeline from `test` branch
 - [ ] Production environment delivering reliable service with GitHub Pages deployment from `main` branch
 - [ ] All four stories completed with acceptance criteria met (5.1-5.4)
-- [ ] Environment management CLI (`scripts/env`) functional for all environments  
+- [ ] Environment management CLI (`scripts/env`) functional for all environments
 - [ ] Database migration workflow tested and validated across all environments
 - [ ] Security hardening implemented with environment-specific configurations
 - [ ] CI/CD pipeline operational with quality gates and automated testing
@@ -108,14 +118,16 @@ The project includes a unified CLI (`scripts/env`) for seamless environment swit
 - [ ] Infrastructure cost optimization implemented for Supabase projects
 
 ## Story Sequencing & Dependencies
+
 1. **5.3 Development Environment** - Foundation for local development workflow
 2. **5.1 Test Environment** - Depends on 5.3, enables continuous validation
-3. **5.2 Production Infrastructure** - Depends on 5.1 completion and validation  
+3. **5.2 Production Infrastructure** - Depends on 5.1 completion and validation
 4. **5.4 Security & Compliance** - Final layer, implements security across all environments
 
 ## Development & Deployment Workflow
 
 ### Local Development Environment
+
 ```bash
 # Setup local environment
 npx supabase start                    # Start Docker Supabase
@@ -124,8 +136,9 @@ cd frontend && npm run dev           # Start React development server
 ```
 
 ### Test Environment Deployment
+
 ```bash
-# Development to test workflow  
+# Development to test workflow
 git checkout test                    # Switch to test branch
 git merge develop                    # Merge latest changes
 ./scripts/env use test              # Switch to test environment
@@ -134,17 +147,19 @@ git push origin test                # Trigger GitHub Actions CI/CD
 ```
 
 **Automated CI/CD Pipeline (GitHub Actions):**
+
 1. **Quality Gates**: ESLint, TypeScript compilation, unit tests
 2. **Integration Tests**: Execute comprehensive test suite
-3. **Build Process**: Vite production build with test environment config  
+3. **Build Process**: Vite production build with test environment config
 4. **Migration Deployment**: Automated database migration execution
 5. **GitHub Pages Deployment**: Deploy to test environment
 6. **Smoke Tests**: Validate deployment functionality
 
-### Production Deployment  
+### Production Deployment
+
 ```bash
 # Test to production workflow
-git checkout main                   # Switch to main branch  
+git checkout main                   # Switch to main branch
 git merge test                      # Merge validated changes
 ./scripts/env use prod              # Switch to production environment
 ./scripts/env push prod             # Deploy migrations to production
@@ -152,6 +167,7 @@ git push origin main                # Trigger production deployment
 ```
 
 **Production Deployment Pipeline:**
+
 1. **Final Quality Gates**: Complete test suite execution
 2. **Security Scanning**: Automated vulnerability assessment
 3. **Production Build**: Optimized build with production configuration
@@ -160,6 +176,7 @@ git push origin main                # Trigger production deployment
 6. **Health Checks**: Post-deployment validation and monitoring
 
 ### Migration Management
+
 ```bash
 # Create new migration
 ./scripts/env migrate "add_new_table"    # Create migration file
@@ -170,7 +187,7 @@ npx supabase db reset                    # Reset local database
 npx supabase start                       # Apply all migrations
 
 # Deploy to test environment
-./scripts/env use test                   # Switch to test  
+./scripts/env use test                   # Switch to test
 ./scripts/env push test                  # Deploy to test database
 
 # Deploy to production (after validation)
@@ -179,12 +196,13 @@ npx supabase start                       # Apply all migrations
 ```
 
 ### Environment Management CLI Commands
+
 ```bash
 # Environment switching
 ./scripts/env use local|test|prod        # Switch frontend configuration
 ./scripts/env status                     # Show current environment
 
-# Database operations  
+# Database operations
 ./scripts/env link test|prod             # Link Supabase CLI to project
 ./scripts/env migrate "name"             # Create new migration
 ./scripts/env push test|prod             # Deploy migrations
@@ -194,6 +212,7 @@ npx supabase start                       # Apply all migrations
 ```
 
 ---
-*Epic Owner: Product Owner (Sarah)*  
-*Technical Lead: DevOps Engineer*  
-*Priority: High (Foundation Infrastructure)*
+
+_Epic Owner: Product Owner (Sarah)_  
+_Technical Lead: DevOps Engineer_  
+_Priority: High (Foundation Infrastructure)_
