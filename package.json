@@ -20,9 +20,6 @@
     "precommit": "node scripts/quality-gates.js --pre-commit",
     "hooks:install": "git config core.hooksPath .githooks && chmod +x .githooks/pre-commit",
     "hooks:uninstall": "git config --unset core.hooksPath",
-    "frontend:dev": "./scripts/start-development.sh",
-    "frontend:build": "cd frontend && npm run build",
-    "frontend:test": "cd frontend && npm run test",
     "env:test": "./scripts/use-test.sh",
     "env:prod": "./scripts/use-production.sh",
     "env:local": "./scripts/use-local.sh",
@@ -52,8 +49,5 @@
     "typescript-eslint": "^8.39.1",
     "vite": "^7.1.2",
     "vitest": "^3.2.4"
-  },
-  "workspaces": [
-    "frontend"
-  ]
+  }
 }
