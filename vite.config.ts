@@ -22,8 +22,14 @@ const getGitInfo = () => {
 export default defineConfig({
   plugins: [react()],
   base: '/',
+  server: {
+    historyApiFallback: true,
+  },
   build: {
     outDir: 'dist',
+  },
+  preview: {
+    historyApiFallback: true,
   },
   define: {
     __GIT_INFO__: JSON.stringify(getGitInfo()),
@@ -32,8 +38,11 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./src/test-setup.ts'],
-    include: ['src/**/*.{test,spec}.{js,ts,tsx}'],
-    exclude: ['**/node_modules/**'],
+    include: [
+      'src/**/*.{test,spec}.{js,ts,tsx}',
+      'tests/**/*.{test,spec}.{js,ts,tsx}',
+    ],
+    exclude: ['**/node_modules/**', 'tests/e2e/**'],
     silent: false,
   },
 });

@@ -44,7 +44,7 @@ describe('App', () => {
     const compactHeader = screen.getByTestId('dev-info-compact-header');
     expect(compactHeader).toBeInTheDocument();
     expect(compactHeader).toHaveTextContent(
-      '🔧 DEV: v.abc123 | Development | Unknown'
+      '🔧 DEV: v.abc123 | Development | Local Dev'
     );
   });
 
@@ -199,7 +199,7 @@ describe('App', () => {
     render(<App />);
 
     const compactHeader = screen.getByTestId('dev-info-compact-header');
-    expect(compactHeader).toHaveTextContent('Unknown'); // "Unknown Database" shortened
+    expect(compactHeader).toHaveTextContent('Local Dev'); // "Local Development" shortened
   });
 
   // Responsive design tests

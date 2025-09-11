@@ -1,5 +1,6 @@
 import './App.css';
 import { useState } from 'react';
+import { SupabaseConnectionTest } from './lib/supabase-test';
 
 // Get build-time git info injected by Vite
 declare const __GIT_INFO__: {
@@ -157,7 +158,10 @@ function App() {
   // Get database info
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'Not configured';
   const getDatabaseEnv = (url: string) => {
-    if (url === 'Not configured') return 'Local Development';
+    if (!url || url === 'Not configured' || url === 'undefined')
+      return 'Local Development';
+    if (url.includes('127.0.0.1') || url.includes('localhost'))
+      return 'Local Development';
     if (url.includes('myxicttnpflkwnofbhci')) return 'Test Database';
     if (url.includes('aajurxtbngbixsdptfzz')) return 'Production Database';
     return 'Unknown Database';
@@ -176,6 +180,7 @@ function App() {
           databaseEnv={getDatabaseEnv(supabaseUrl)}
           supabaseUrl={supabaseUrl}
         />
+        <SupabaseConnectionTest />
       </div>
     </div>
   );

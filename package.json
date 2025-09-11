@@ -30,8 +30,11 @@
     "db:push:prod": "supabase link --project-ref aajurxtbngbixsdptfzz && supabase db push"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "@types/react-router-dom": "^5.3.3",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.8.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
