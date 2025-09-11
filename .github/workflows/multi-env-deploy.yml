@@ -127,6 +127,9 @@ jobs:
           # Link project and apply all migrations
           supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
           supabase db push --include-all -p $SUPABASE_DB_PASSWORD
+          # Verify table exists after migration
+          echo "🔍 Verifying tables in test database..."
+          echo "SELECT tablename FROM pg_tables WHERE schemaname = 'public';" | supabase db psql --db-url "postgresql://postgres:$SUPABASE_DB_PASSWORD@db.myxicttnpflkwnofbhci.supabase.co:5432/postgres"
           echo "✅ Migrations applied to test database"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
