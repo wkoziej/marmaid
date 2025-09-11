@@ -110,6 +110,29 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Setup Supabase CLI for test
+        uses: supabase/setup-cli@v1
+        with:
+          version: '2.39.2'
+
+      - name: Apply migrations to test database
+        run: |
+          cd supabase
+          # Initialize minimal Supabase project for CI/CD (non-interactive)
+          if [ ! -f config.toml ]; then
+            supabase init --yes
+          fi
+          # Login to Supabase CLI
+          supabase login --token $SUPABASE_ACCESS_TOKEN
+          # Link project and apply all migrations
+          supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
+          supabase db push --include-all -p $SUPABASE_DB_PASSWORD
+          echo "✅ Migrations applied to test database"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
+
       - name: Build landing page for test
         run: npm run build
         env:
