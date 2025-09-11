@@ -5,17 +5,20 @@ Ten system zapewnia spójne sprawdzenia jakości kodu zarówno lokalnie jak i w 
 ## 📋 Co sprawdzamy
 
 ### 1. **ESLint** - Jakość kodu i standardy
+
 - Błędy składni i logiczne
-- Nieużywane zmienne i importy  
+- Nieużywane zmienne i importy
 - Standardy kodowania TypeScript/React
 - Potential security issues
 
 ### 2. **TypeScript** - Sprawdzenie typów
+
 - Błędy kompilacji TypeScript
 - Niespójności typów
 - Missing type definitions
 
 ### 3. **Testy** - Jakość i pokrycie
+
 - **CI Mode**: Wszystkie testy (unit + integration)
 - **Pre-commit Mode**: Tylko testy związane ze zmienionymi plikami
 
@@ -36,6 +39,7 @@ npm run hooks:uninstall
 **Dla integration testów potrzebujesz zmiennych środowiskowych:**
 
 1. Skopiuj `.env.test` do `.env.test.local`:
+
 ```bash
 cp .env.test .env.test.local
 ```
@@ -66,6 +70,7 @@ npm test -- --run
 ## ⚡ Pre-commit Mode vs CI Mode
 
 ### Pre-commit Mode (Szybki)
+
 - ✅ Uruchamia się automatycznie przed commit
 - ✅ Sprawdza tylko staged files
 - ✅ Uruchamia tylko powiązane testy
@@ -73,8 +78,9 @@ npm test -- --run
 - ❌ Nie uruchamia E2E testów
 
 ### CI Mode (Kompletny)
+
 - ✅ Sprawdza wszystkie pliki
-- ✅ Uruchamia wszystkie testy  
+- ✅ Uruchamia wszystkie testy
 - ✅ Kompletna walidacja
 - ✅ Uruchamia E2E testy
 - ❌ Wolniejszy (1-5 minut)
@@ -94,6 +100,7 @@ npm run hooks:uninstall
 ### Dostosowanie sprawdzeń
 
 Edytuj `scripts/quality-gates.js` aby:
+
 - Dodać nowe sprawdzenia
 - Zmienić strategie wykrywania testów
 - Dostosować kolory i komunikaty
@@ -114,6 +121,7 @@ frontend/
 ## 🐛 Rozwiązywanie problemów
 
 ### "node: not found"
+
 ```bash
 # Zainstaluj Node.js lub upewnij się że jest w PATH
 which node
@@ -121,12 +129,14 @@ node --version
 ```
 
 ### "Cannot find module"
+
 ```bash
 # Zainstaluj dependencje
 npm ci
 ```
 
 ### Hooks nie działają
+
 ```bash
 # Sprawdź konfigurację git
 git config core.hooksPath
@@ -141,6 +151,7 @@ chmod +x .githooks/pre-commit
 ```
 
 ### Zbyt wolne sprawdzenia
+
 ```bash
 # Uruchom tylko podstawowe sprawdzenia
 npm run lint
@@ -153,12 +164,14 @@ git commit --no-verify -m "message"
 ## 🎯 Best Practices
 
 ### Dla developerów
+
 1. **Instaluj hooks**: `npm run hooks:install` w każdym projekcie
 2. **Testuj lokalnie**: `npm run precommit` przed push
 3. **Nie pomijaj bez powodu**: `--no-verify` tylko w emergencjach
 4. **Naprawiaj od razu**: Nie commituj ze złamanymi testami
 
 ### Dla zespołu
+
 1. **Dokumentuj nowe sprawdzenia**: Aktualizuj tę dokumentację
 2. **Optymalizuj czas**: Preferuj szybkie sprawdzenia w pre-commit
 3. **Komunikuj zmiany**: Informuj zespół o zmianach w quality gates
@@ -167,16 +180,18 @@ git commit --no-verify -m "message"
 ## 🔗 Integracje
 
 ### CI/CD GitHub Actions
+
 - Używa tego samego scriptu: `npm run quality-gates`
 - Uruchamia pełne sprawdzenia na każdym PR
 - Blokuje merge jeśli sprawdzenia failują
 
 ### IDE Integration
+
 ```json
 // .vscode/tasks.json
 {
   "label": "Quality Gates",
-  "type": "shell", 
+  "type": "shell",
   "command": "npm",
   "args": ["run", "precommit"],
   "group": "test"
@@ -184,14 +199,16 @@ git commit --no-verify -m "message"
 ```
 
 ### Package.json Scripts
+
 - `quality-gates`: Pełne sprawdzenia (CI mode)
-- `precommit`: Szybkie sprawdzenia (pre-commit mode)  
+- `precommit`: Szybkie sprawdzenia (pre-commit mode)
 - `hooks:install`: Instalacja git hooks
 - `hooks:uninstall`: Usunięcie git hooks
 
 ## 📊 Przykładowy output
 
 ### Pre-commit mode (szybki)
+
 ```bash
 $ npm run precommit
 
@@ -204,7 +221,7 @@ $ npm run precommit
 ▶ Running ESLint
 ✅ Running ESLint ✓
 
-▶ Running TypeScript type check  
+▶ Running TypeScript type check
 ✅ Running TypeScript type check ✓
 
 🧪 Running tests for 1 test files
@@ -213,13 +230,14 @@ $ npm run precommit
 
 📊 Quality Gates Summary:
   ✅ ESLint: Passed
-  ✅ TypeCheck: Passed  
+  ✅ TypeCheck: Passed
   ✅ Tests: Passed
 
 🎉 All quality gates passed!
 ```
 
 ### CI mode (kompletny)
+
 ```bash
 $ npm run quality-gates
 
@@ -236,7 +254,7 @@ $ npm run quality-gates
 🔧 Unit mode: All services mocked
 ✅ Running unit tests ✓
 
-▶ Running integration tests  
+▶ Running integration tests
 🧪 Test setup: Integration mode
 🌐 Integration mode: Using real Supabase when available
    Supabase URL: https://myxicttnpflkwnofbhci.supabase.co
@@ -264,8 +282,9 @@ $ npm run quality-gates
 - ✅ Kolorowe, czytelne raporty
 
 **Testowane i działające komponenty:**
+
 - 🔧 ESLint checks (regex fixes applied)
-- 🔍 TypeScript validation  
+- 🔍 TypeScript validation
 - 🧪 Unit tests (86 passed, mocked services)
 - 🌐 Integration tests (real Supabase environment)
 - 🚀 Quality gates automation

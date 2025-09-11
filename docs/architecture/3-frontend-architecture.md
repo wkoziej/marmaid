@@ -1,5 +1,7 @@
 # 3. Frontend Architecture
+
 **Struktura:**
+
 ```
 src/
   app/               # routing, layout
@@ -17,11 +19,12 @@ src/
 ```
 
 **Wzorce:**
-- **Protected routes** (guardy auth) – dostęp do danych tylko po zalogowaniu.  
-- **React Query** do synchronizacji z Supabase (useQuery/useMutation).  
-- **Formularze** RHF+Zod (schematy walidacji współdzielone z backendem tam gdzie możliwe).  
-- **Wizualizacja**:  
-  - 2D: SVG + warstwa adnotacji (nazwy, ID punktów, tooltipy).  
-  - 3D: react-three-fiber (GLTF/FBX model sylwetki), overlay punktów (XYZ, label, kolory wg szkoły).  
+
+- **Protected routes** (guardy auth) – dostęp do danych tylko po zalogowaniu.
+- **React Query** do synchronizacji z Supabase (useQuery/useMutation).
+- **Formularze** RHF+Zod (schematy walidacji współdzielone z backendem tam gdzie możliwe).
+- **Wizualizacja**:
+  - 2D: SVG + warstwa adnotacji (nazwy, ID punktów, tooltipy).
+  - 3D: react-three-fiber (GLTF/FBX model sylwetki), overlay punktów (XYZ, label, kolory wg szkoły).
 
 ---

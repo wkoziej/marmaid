@@ -120,7 +120,7 @@
     white-space: normal;
     word-break: break-word;
   }
-  
+
   .dev-info-detailed {
     padding: 0.75rem;
   }
@@ -131,12 +131,12 @@
     font-size: 0.75em !important;
     padding: 0.25rem;
   }
-  
+
   .dev-info-detailed {
     padding: 0.5rem;
     font-size: 0.85em;
   }
-  
+
   .dev-info-detailed p {
     margin: 0.15em 0;
   }

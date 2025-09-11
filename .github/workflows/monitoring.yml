@@ -12,147 +12,147 @@ jobs:
   health-check:
     runs-on: ubuntu-latest
     steps:
-    - name: Check Production Site Health
-      id: prod-health
-      run: |
-        PROD_URL="https://marmaid.pl/"
-        echo "🔍 Checking production site health: $PROD_URL"
-        
-        # Check if site is reachable
-        if curl -f -s --connect-timeout 10 --max-time 30 "$PROD_URL" > /dev/null; then
-          echo "✅ Production site is healthy"
-          echo "status=healthy" >> $GITHUB_OUTPUT
-        else
-          echo "❌ Production site is down or unreachable"
-          echo "status=unhealthy" >> $GITHUB_OUTPUT
-          exit 1
-        fi
-        
-        # Check response time
-        RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" "$PROD_URL")
-        echo "⏱️  Response time: ${RESPONSE_TIME}s"
-        
-        # Alert if response time > 5 seconds
-        if (( $(echo "$RESPONSE_TIME > 5.0" | bc -l) )); then
-          echo "⚠️  Slow response time: ${RESPONSE_TIME}s"
-          echo "slow=true" >> $GITHUB_OUTPUT
-        fi
-    
-    - name: Check Test Site Health  
-      id: test-health
-      run: |
-        TEST_URL="https://test.marmaid.pl/"
-        echo "🔍 Checking test site health: $TEST_URL"
-        
-        if curl -f -s --connect-timeout 10 --max-time 30 "$TEST_URL" > /dev/null; then
-          echo "✅ Test site is healthy"
-          echo "status=healthy" >> $GITHUB_OUTPUT
-        else
-          echo "❌ Test site is down or unreachable"
-          echo "status=unhealthy" >> $GITHUB_OUTPUT
-          # Don't exit 1 here - test failures shouldn't break production monitoring
-        fi
-    
-    - name: Check Supabase Connectivity
-      id: supabase-health
-      env:
-        PROD_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
-        PROD_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
-        TEST_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
-        TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-      run: |
-        # Check production Supabase health
-        if [ -n "$PROD_SUPABASE_URL" ] && [ -n "$PROD_SUPABASE_ANON_KEY" ]; then
-          HEALTH_URL="${PROD_SUPABASE_URL}/rest/v1/health"
-          echo "🔍 Checking PRODUCTION Supabase health: $HEALTH_URL"
-          
-          if curl -f -s --connect-timeout 10 --max-time 30 \
-            -H "apikey: $PROD_SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $PROD_SUPABASE_ANON_KEY" \
-            "$HEALTH_URL" > /dev/null; then
-            echo "✅ Production Supabase is healthy"
-            echo "prod_status=healthy" >> $GITHUB_OUTPUT
+      - name: Check Production Site Health
+        id: prod-health
+        run: |
+          PROD_URL="https://marmaid.pl/"
+          echo "🔍 Checking production site health: $PROD_URL"
+
+          # Check if site is reachable
+          if curl -f -s --connect-timeout 10 --max-time 30 "$PROD_URL" > /dev/null; then
+            echo "✅ Production site is healthy"
+            echo "status=healthy" >> $GITHUB_OUTPUT
           else
-            echo "❌ Production Supabase health check failed"
-            echo "prod_status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Production site is down or unreachable"
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            exit 1
           fi
-        else
-          echo "⚠️ Production Supabase secrets not configured"
-          echo "prod_status=not_configured" >> $GITHUB_OUTPUT
-        fi
-        
-        # Check test Supabase health
-        if [ -n "$TEST_SUPABASE_URL" ] && [ -n "$TEST_SUPABASE_ANON_KEY" ]; then
-          TEST_HEALTH_URL="${TEST_SUPABASE_URL}/rest/v1/health"
-          echo "🔍 Checking TEST Supabase health: $TEST_HEALTH_URL"
-          
-          if curl -f -s --connect-timeout 10 --max-time 30 \
-            -H "apikey: $TEST_SUPABASE_ANON_KEY" \
-            -H "Authorization: Bearer $TEST_SUPABASE_ANON_KEY" \
-            "$TEST_HEALTH_URL" > /dev/null; then
-            echo "✅ Test Supabase is healthy"
-            echo "test_status=healthy" >> $GITHUB_OUTPUT
+
+          # Check response time
+          RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" "$PROD_URL")
+          echo "⏱️  Response time: ${RESPONSE_TIME}s"
+
+          # Alert if response time > 5 seconds
+          if (( $(echo "$RESPONSE_TIME > 5.0" | bc -l) )); then
+            echo "⚠️  Slow response time: ${RESPONSE_TIME}s"
+            echo "slow=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check Test Site Health
+        id: test-health
+        run: |
+          TEST_URL="https://test.marmaid.pl/"
+          echo "🔍 Checking test site health: $TEST_URL"
+
+          if curl -f -s --connect-timeout 10 --max-time 30 "$TEST_URL" > /dev/null; then
+            echo "✅ Test site is healthy"
+            echo "status=healthy" >> $GITHUB_OUTPUT
           else
-            echo "❌ Test Supabase health check failed"
-            echo "test_status=unhealthy" >> $GITHUB_OUTPUT
+            echo "❌ Test site is down or unreachable"
+            echo "status=unhealthy" >> $GITHUB_OUTPUT
+            # Don't exit 1 here - test failures shouldn't break production monitoring
           fi
-        else
-          echo "⚠️ Test Supabase secrets not configured"
-          echo "test_status=not_configured" >> $GITHUB_OUTPUT
-        fi
-        
-        echo "status=completed" >> $GITHUB_OUTPUT
+
+      - name: Check Supabase Connectivity
+        id: supabase-health
+        env:
+          PROD_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
+          PROD_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          TEST_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
+          TEST_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+        run: |
+          # Check production Supabase health
+          if [ -n "$PROD_SUPABASE_URL" ] && [ -n "$PROD_SUPABASE_ANON_KEY" ]; then
+            HEALTH_URL="${PROD_SUPABASE_URL}/rest/v1/health"
+            echo "🔍 Checking PRODUCTION Supabase health: $HEALTH_URL"
+            
+            if curl -f -s --connect-timeout 10 --max-time 30 \
+              -H "apikey: $PROD_SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $PROD_SUPABASE_ANON_KEY" \
+              "$HEALTH_URL" > /dev/null; then
+              echo "✅ Production Supabase is healthy"
+              echo "prod_status=healthy" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Production Supabase health check failed"
+              echo "prod_status=unhealthy" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "⚠️ Production Supabase secrets not configured"
+            echo "prod_status=not_configured" >> $GITHUB_OUTPUT
+          fi
+
+          # Check test Supabase health
+          if [ -n "$TEST_SUPABASE_URL" ] && [ -n "$TEST_SUPABASE_ANON_KEY" ]; then
+            TEST_HEALTH_URL="${TEST_SUPABASE_URL}/rest/v1/health"
+            echo "🔍 Checking TEST Supabase health: $TEST_HEALTH_URL"
+            
+            if curl -f -s --connect-timeout 10 --max-time 30 \
+              -H "apikey: $TEST_SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $TEST_SUPABASE_ANON_KEY" \
+              "$TEST_HEALTH_URL" > /dev/null; then
+              echo "✅ Test Supabase is healthy"
+              echo "test_status=healthy" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Test Supabase health check failed"
+              echo "test_status=unhealthy" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "⚠️ Test Supabase secrets not configured"
+            echo "test_status=not_configured" >> $GITHUB_OUTPUT
+          fi
+
+          echo "status=completed" >> $GITHUB_OUTPUT
 
   alert-on-failure:
     runs-on: ubuntu-latest
     needs: health-check
     if: failure()
     steps:
-    - name: Send Alert Notification
-      run: |
-        echo "🚨 ALERT: Health check failed!"
-        echo "Timestamp: $(date)"
-        echo "Workflow: ${{ github.workflow }}"
-        echo "Run ID: ${{ github.run_id }}"
-        
-        # Create summary for GitHub
-        {
-          echo "## 🚨 Health Check Alert"
-          echo ""
-          echo "**Time:** $(date)"
-          echo "**Status:** FAILED"
-          echo "**Workflow:** ${{ github.workflow }}"
-          echo ""
-          echo "### Details"
-          echo "One or more health checks failed. Please investigate immediately."
-          echo ""
-          echo "**Actions Required:**"
-          echo "1. Check application logs"
-          echo "2. Verify Supabase status"  
-          echo "3. Test deployment functionality"
-          echo ""
-          echo "**Links:**"
-          echo "- [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-          echo "- [Production Site](https://marmaid.pl/)"
-        } >> $GITHUB_STEP_SUMMARY
+      - name: Send Alert Notification
+        run: |
+          echo "🚨 ALERT: Health check failed!"
+          echo "Timestamp: $(date)"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+
+          # Create summary for GitHub
+          {
+            echo "## 🚨 Health Check Alert"
+            echo ""
+            echo "**Time:** $(date)"
+            echo "**Status:** FAILED"
+            echo "**Workflow:** ${{ github.workflow }}"
+            echo ""
+            echo "### Details"
+            echo "One or more health checks failed. Please investigate immediately."
+            echo ""
+            echo "**Actions Required:**"
+            echo "1. Check application logs"
+            echo "2. Verify Supabase status"  
+            echo "3. Test deployment functionality"
+            echo ""
+            echo "**Links:**"
+            echo "- [Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            echo "- [Production Site](https://marmaid.pl/)"
+          } >> $GITHUB_STEP_SUMMARY
 
   daily-summary:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' && github.event.schedule == '0 9 * * *'
     steps:
-    - name: Generate Daily Health Report
-      run: |
-        echo "📊 Daily Health Summary - $(date)"
-        echo ""
-        echo "## System Status Overview"
-        echo "- Production Site: Monitored every 15 minutes"
-        echo "- Supabase Backend: Monitored every 15 minutes" 
-        echo "- Test Environment: Coming soon"
-        echo ""
-        echo "## Recent Activity"
-        echo "Check the Actions tab for recent health check results."
-        echo ""
-        echo "## Key Metrics to Monitor"
-        echo "- Response time < 5 seconds"
-        echo "- Uptime > 99.5%"
-        echo "- Zero critical errors"
+      - name: Generate Daily Health Report
+        run: |
+          echo "📊 Daily Health Summary - $(date)"
+          echo ""
+          echo "## System Status Overview"
+          echo "- Production Site: Monitored every 15 minutes"
+          echo "- Supabase Backend: Monitored every 15 minutes" 
+          echo "- Test Environment: Coming soon"
+          echo ""
+          echo "## Recent Activity"
+          echo "Check the Actions tab for recent health check results."
+          echo ""
+          echo "## Key Metrics to Monitor"
+          echo "- Response time < 5 seconds"
+          echo "- Uptime > 99.5%"
+          echo "- Zero critical errors"

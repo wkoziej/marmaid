@@ -12,20 +12,25 @@ scripts/migrations/
 ## Konwencja nazewnictwa
 
 ### Migracje (supabase/migrations/)
+
 ```
 {YYYYMMDDHHMMSS}_{opis_migracji}.sql
 ```
+
 **Przykład:** `20250901174855_create_therapists_table.sql`
 
 ### Plany rollback (scripts/migrations/rollbacks/)
+
 ```
 {YYYYMMDDHHMMSS}_rollback_{nazwa_tabeli}.sql
 ```
+
 **Przykład:** `20250901174855_rollback_therapists_table.sql`
 
 ## Procedura dodawania migracji
 
 1. **Utworzenie migracji:**
+
    ```bash
    supabase migration new nazwa_migracji
    ```
@@ -35,6 +40,7 @@ scripts/migrations/
 3. **Utworzenie planu rollback** w `scripts/migrations/rollbacks/`
 
 4. **Testowanie lokalnie:**
+
    ```bash
    supabase db reset
    supabase start
@@ -49,9 +55,10 @@ scripts/migrations/
 ## Standardy plików rollback
 
 Każdy plan rollback powinien zawierać:
+
 - Drop policies RLS w odwrotnej kolejności
 - Drop indeksów
-- Drop triggerów  
+- Drop triggerów
 - Drop tabel z CASCADE
 - Komentarz o zachowaniu współdzielonych funkcji
 
@@ -64,10 +71,10 @@ Każdy plan rollback powinien zawierać:
 
 ## Historia migracji
 
-| Timestamp | Migracja | Story | Status |
-|-----------|----------|-------|---------|
-| 20250901174855 | create_therapists_table | 1.2 | ✅ Deployed |
+| Timestamp      | Migracja                | Story | Status      |
+| -------------- | ----------------------- | ----- | ----------- |
+| 20250901174855 | create_therapists_table | 1.2   | ✅ Deployed |
 
 ## Kontakt
 
-W przypadku problemów z migracjami skontaktuj się z @dev.mdc 
+W przypadku problemów z migracjami skontaktuj się z @dev.mdc

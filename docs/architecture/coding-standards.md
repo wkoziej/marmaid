@@ -3,84 +3,89 @@
 ## TypeScript Standards
 
 ### Type Definitions
+
 ```typescript
 // ✅ DO: Explicit types for interfaces
 interface User {
-  id: string
-  email: string
-  role: 'therapist' | 'client'
-  createdAt: string
+  id: string;
+  email: string;
+  role: 'therapist' | 'client';
+  createdAt: string;
 }
 
 // ✅ DO: Use type unions for constants
-type Theme = 'light' | 'dark' | 'system'
+type Theme = 'light' | 'dark' | 'system';
 
 // ❌ DON'T: Use any
-const badData: any = getData()
+const badData: any = getData();
 
 // ✅ DO: Use unknown and type guards
-const safeData: unknown = getData()
+const safeData: unknown = getData();
 if (isUser(safeData)) {
   // Now safeData is User type
 }
 ```
 
 ### Function Types
+
 ```typescript
 // ✅ DO: Function with proper return types
 const fetchUser = async (id: string): Promise<User | null> => {
   // implementation
-}
+};
 
 // ✅ DO: Generic functions when needed
 const createApiCall = <T>(url: string): Promise<T> => {
   // implementation
-}
+};
 ```
 
 ## React Standards
 
 ### Component Definition
+
 ```typescript
 // ✅ DO: Functional components with TypeScript
 interface LoginFormProps {
-  onSubmit: (data: LoginData) => void
-  isLoading?: boolean
+  onSubmit: (data: LoginData) => void;
+  isLoading?: boolean;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ 
-  onSubmit, 
-  isLoading = false 
+export const LoginForm: React.FC<LoginFormProps> = ({
+  onSubmit,
+  isLoading = false,
 }) => {
   // implementation
-}
+};
 ```
 
 ### Hooks Usage
+
 ```typescript
 // ✅ DO: Custom hooks for business logic
 export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
-  
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
   // ... logic
-  
-  return { user, loading, login, logout }
-}
+
+  return { user, loading, login, logout };
+};
 
 // ✅ DO: Dependency arrays in effects
 useEffect(() => {
-  fetchData(userId)
-}, [userId]) // Explicit dependency
+  fetchData(userId);
+}, [userId]); // Explicit dependency
 ```
 
 ### State Management (Zustand)
+
 ```typescript
 // ✅ DO: Typed stores
 interface AuthStore {
-  user: User | null
-  login: (email: string, password: string) => Promise<void>
-  logout: () => void
+  user: User | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
 export const useAuthStore = create<AuthStore>((set, get) => ({
@@ -88,24 +93,26 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   login: async (email, password) => {
     // implementation
   },
-  logout: () => set({ user: null })
-}))
+  logout: () => set({ user: null }),
+}));
 ```
 
 ## Form Standards (React Hook Form + Zod)
 
 ### Schema Definition
+
 ```typescript
 // ✅ DO: Zod schemas with proper validation
 const loginSchema = z.object({
   email: z.string().email('Invalid email format'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-})
+});
 
-type LoginFormData = z.infer<typeof loginSchema>
+type LoginFormData = z.infer<typeof loginSchema>;
 ```
 
 ### Form Implementation
+
 ```typescript
 // ✅ DO: Typed forms with validation
 const LoginForm = () => {
@@ -129,6 +136,7 @@ const LoginForm = () => {
 ## Styling Standards (TailwindCSS + shadcn/ui)
 
 ### Component Styling
+
 ```typescript
 // ✅ DO: Use cn() utility for conditional classes
 import { cn } from '@/lib/utils'
@@ -151,6 +159,7 @@ const Button = ({ className, variant, ...props }) => {
 ```
 
 ### CSS Organization
+
 ```css
 /* ✅ DO: Use Tailwind layers */
 @layer base {
@@ -169,6 +178,7 @@ const Button = ({ className, variant, ...props }) => {
 ## API & Data Fetching (TanStack Query + Supabase)
 
 ### Query Hooks
+
 ```typescript
 // ✅ DO: Custom query hooks with proper typing
 export const useUser = (userId: string) => {
@@ -176,37 +186,39 @@ export const useUser = (userId: string) => {
     queryKey: ['user', userId],
     queryFn: () => fetchUser(userId),
     enabled: !!userId,
-  })
-}
+  });
+};
 
 // ✅ DO: Mutation hooks with optimistic updates
 export const useUpdateUser = () => {
-  const queryClient = useQueryClient()
-  
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: updateUser,
-    onSuccess: (data) => {
-      queryClient.setQueryData(['user', data.id], data)
+    onSuccess: data => {
+      queryClient.setQueryData(['user', data.id], data);
     },
-  })
-}
+  });
+};
 ```
 
 ### Supabase Client
+
 ```typescript
 // ✅ DO: Typed Supabase client
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from '@/lib/database.types'
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from '@/lib/database.types';
 
 export const supabase = createClient<Database>(
   process.env.VITE_SUPABASE_URL!,
   process.env.VITE_SUPABASE_ANON_KEY!
-)
+);
 ```
 
 ## Error Handling
 
 ### Error Boundaries
+
 ```typescript
 // ✅ DO: Error boundaries for graceful failures
 class ErrorBoundary extends Component<Props, State> {
@@ -229,23 +241,24 @@ class ErrorBoundary extends Component<Props, State> {
 ```
 
 ### Async Error Handling
+
 ```typescript
 // ✅ DO: Proper error handling in async functions
 const handleLogin = async (data: LoginData) => {
   try {
-    setLoading(true)
-    await login(data)
-    navigate('/dashboard')
+    setLoading(true);
+    await login(data);
+    navigate('/dashboard');
   } catch (error) {
     if (error instanceof AuthError) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      setError('An unexpected error occurred')
+      setError('An unexpected error occurred');
     }
   } finally {
-    setLoading(false)
+    setLoading(false);
   }
-}
+};
 ```
 
 ## Testing Standards
@@ -253,18 +266,19 @@ const handleLogin = async (data: LoginData) => {
 ### E2E Test Selector Standardization
 
 #### Test Attribute Standards
+
 ```typescript
 // ✅ DO: Use data-testid for stable selectors
-<button 
+<button
   data-testid="login-submit-button"
   className="btn-primary"
 >
   Zaloguj się
 </button>
 
-<input 
+<input
   data-testid="email-input"
-  type="email" 
+  type="email"
   name="email"
 />
 
@@ -275,26 +289,28 @@ const handleLogin = async (data: LoginData) => {
 ```
 
 #### E2E Test Implementation
+
 ```typescript
 // ✅ DO: Use getByTestId() for stable selectors
 test('user can login with valid credentials', async ({ page }) => {
-  await page.getByTestId('email-input').fill('test@example.com')
-  await page.getByTestId('password-input').fill('password123')
-  await page.getByTestId('login-submit-button').click()
-  
-  await expect(page.getByTestId('dashboard-heading')).toBeVisible()
-})
+  await page.getByTestId('email-input').fill('test@example.com');
+  await page.getByTestId('password-input').fill('password123');
+  await page.getByTestId('login-submit-button').click();
+
+  await expect(page.getByTestId('dashboard-heading')).toBeVisible();
+});
 
 // ❌ DON'T: Use language-dependent selectors
-await page.getByRole('button', { name: 'Zaloguj się' }).click() // Breaks with UI text changes
-await page.getByText('Zarządzanie klientami').click() // Language-dependent
+await page.getByRole('button', { name: 'Zaloguj się' }).click(); // Breaks with UI text changes
+await page.getByText('Zarządzanie klientami').click(); // Language-dependent
 
 // ✅ DO: Use stable data-testid selectors instead
-await page.getByTestId('login-submit-button').click()
-await page.getByTestId('client-management-link').click()
+await page.getByTestId('login-submit-button').click();
+await page.getByTestId('client-management-link').click();
 ```
 
 #### Data-TestId Naming Conventions
+
 ```typescript
 // ✅ DO: Descriptive, semantic naming
 data-testid="login-submit-button"        // Action + element type
@@ -310,6 +326,7 @@ data-testid="email_input"               // Use kebab-case, not snake_case
 ```
 
 #### Component Integration Rules
+
 ```typescript
 // ✅ DO: Add data-testid to interactive elements used in E2E tests
 interface ButtonProps {
@@ -318,13 +335,13 @@ interface ButtonProps {
   onClick: () => void
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  testId, 
-  children, 
-  onClick 
+export const Button: React.FC<ButtonProps> = ({
+  testId,
+  children,
+  onClick
 }) => {
   return (
-    <button 
+    <button
       data-testid={testId}
       onClick={onClick}
       className="btn-primary"
@@ -341,18 +358,19 @@ export const Button: React.FC<ButtonProps> = ({
 ```
 
 ### Component Testing
+
 ```typescript
 // ✅ DO: Test user interactions, not implementation
 import { render, screen, userEvent } from '@testing-library/react'
 
 test('allows user to login with valid credentials', async () => {
   render(<LoginForm onSubmit={mockSubmit} />)
-  
+
   // ✅ PREFER: Use data-testid when available
   await userEvent.type(screen.getByTestId('email-input'), 'test@example.com')
   await userEvent.type(screen.getByTestId('password-input'), 'password123')
   await userEvent.click(screen.getByTestId('login-submit-button'))
-  
+
   expect(mockSubmit).toHaveBeenCalledWith({
     email: 'test@example.com',
     password: 'password123'
@@ -362,9 +380,9 @@ test('allows user to login with valid credentials', async () => {
 // ✅ FALLBACK: Use accessible queries when data-testid not available
 test('displays validation errors', async () => {
   render(<LoginForm onSubmit={mockSubmit} />)
-  
+
   await userEvent.click(screen.getByRole('button', { name: /login/i }))
-  
+
   expect(screen.getByText(/email is required/i)).toBeInTheDocument()
 })
 ```
@@ -390,4 +408,4 @@ refactor(api): simplify user service
 fix stuff
 update code
 changes
-``` 
+```

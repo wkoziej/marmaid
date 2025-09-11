@@ -4,9 +4,9 @@ name: Multi-Environment Deployment
 
 on:
   push:
-    branches: [ main, test ]
+    branches: [main, test]
   pull_request:
-    branches: [ test ]
+    branches: [test]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages-deployment"
+  group: 'pages-deployment'
   cancel-in-progress: false
 
 jobs:
@@ -23,63 +23,63 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Debug - List repository structure
-      run: |
-        echo "=== Root directory ==="
-        pwd
-        ls -la
-        echo "=== Frontend directory ==="
-        ls -la frontend/ || echo 'Frontend directory not found'
-        echo "=== Looking for package files ==="
-        find . -name "package*.json" -o -name "package-lock.json" || echo 'No package files found'
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: package-lock.json
-    
-    - name: Install dependencies
-      run: |
-        echo "Current directory:"
-        pwd
-        ls -la
-        echo "Looking for package-lock.json:"
-        ls -la package-lock.json || echo 'package-lock.json NOT FOUND'
-        echo "Running npm install:"
-        npm install
-    
-    - name: Type check
-      run: npm run typecheck
-    
-    - name: Run linter
-      run: npm run lint
-    
-    - name: Run unit tests
-      run: npm run test -- --run --reporter=basic
-    
-    - name: Security audit
-      run: npm audit --audit-level moderate
-      continue-on-error: false
-    
-    - name: Check bundle size
-      run: |
-        npm run build
-        BUNDLE_SIZE=$(du -sh dist/ | cut -f1)
-        echo "📦 Bundle size: $BUNDLE_SIZE"
-        # Alert if bundle is larger than 1MB (landing page should be small)
-        if [[ $(du -s dist/ | cut -f1) -gt 1024 ]]; then
-          echo "⚠️  Bundle size exceeds 1MB limit for landing page"
-          exit 1
-        fi
-    
+      - uses: actions/checkout@v4
+
+      - name: Debug - List repository structure
+        run: |
+          echo "=== Root directory ==="
+          pwd
+          ls -la
+          echo "=== Frontend directory ==="
+          ls -la frontend/ || echo 'Frontend directory not found'
+          echo "=== Looking for package files ==="
+          find . -name "package*.json" -o -name "package-lock.json" || echo 'No package files found'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: |
+          echo "Current directory:"
+          pwd
+          ls -la
+          echo "Looking for package-lock.json:"
+          ls -la package-lock.json || echo 'package-lock.json NOT FOUND'
+          echo "Running npm install:"
+          npm install
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run linter
+        run: npm run lint
+
+      - name: Run unit tests
+        run: npm run test -- --run --reporter=basic
+
+      - name: Security audit
+        run: npm audit --audit-level moderate
+        continue-on-error: false
+
+      - name: Check bundle size
+        run: |
+          npm run build
+          BUNDLE_SIZE=$(du -sh dist/ | cut -f1)
+          echo "📦 Bundle size: $BUNDLE_SIZE"
+          # Alert if bundle is larger than 1MB (landing page should be small)
+          if [[ $(du -s dist/ | cut -f1) -gt 1024 ]]; then
+            echo "⚠️  Bundle size exceeds 1MB limit for landing page"
+            exit 1
+          fi
+
     # Skip E2E tests in CI for now due to webServer timeout issues
     # - name: Install Playwright browsers
     #   run: npx playwright install chromium --with-deps
-    # 
+    #
     # - name: Run E2E tests
     #   run: npm run test:e2e
     #   env:
@@ -95,99 +95,98 @@ jobs:
       url: https://test.marmaid.pl/
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        fetch-depth: 0
-    
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: package-lock.json
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Build landing page for test
-      run: npm run build
-      env:
-        VITE_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
-        VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
-        VITE_ENVIRONMENT: test
-    
-    - name: Setup Git for deployment
-      run: |
-        git config --global user.name "GitHub Actions (Test Deploy)"
-        git config --global user.email "actions+test@github.com"
-    
-    - name: Clone test repository
-      run: |
-        cd ../
-        git clone https://${{ secrets.DEPLOY_TOKEN }}@github.com/wkoziej/marmaid-test.git temp-test-repo
-        echo "✅ Test repository cloned"
-    
-    - name: Deploy to test repository
-      run: |
-        cd ../temp-test-repo
-        
-        # Clear existing files (except .git)
-        find . -not -path './.git*' -not -name '.' -not -name '..' -delete
-        
-        # Copy build files
-        cp -r ../marmaid/dist/* .
-        
-        # Create deployment info
-        echo "# Marmaid Test Environment" > README.md
-        echo "" >> README.md
-        echo "**Deployed:** $(date)" >> README.md
-        echo "**Commit:** ${{ github.sha }}" >> README.md
-        echo "**Branch:** ${{ github.ref_name }}" >> README.md
-        echo "" >> README.md
-        echo "[🚀 Production Environment](https://marmaid.pl/)" >> README.md
-        
-        # Commit and push
-        git add .
-        git commit -m "🧪 Deploy test: ${{ github.sha }} - $(date '+%Y-%m-%d %H:%M:%S')"
-        git push origin main
-        
-        echo "✅ Test deployment completed"
-    
-    - name: Wait for GitHub Pages deployment
-      run: sleep 60
-    
-    - name: Test deployment health check
-      run: |
-        URL="https://test.marmaid.pl/"
-        echo "🔍 Testing test deployment at: $URL"
-        
-        # Wait for propagation and test
-        for i in {1..5}; do
-          if curl -f -s --connect-timeout 10 --max-time 30 "$URL" > /dev/null; then
-            echo "✅ Test environment is live (attempt $i)"
-            
-            # Check for expected content
-            if curl -s "$URL" | grep -q "Marmaid\|auth\|login"; then
-              echo "✅ Test environment content verified"
-              break
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build landing page for test
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          VITE_ENVIRONMENT: test
+
+      - name: Setup Git for deployment
+        run: |
+          git config --global user.name "GitHub Actions (Test Deploy)"
+          git config --global user.email "actions+test@github.com"
+
+      - name: Clone test repository
+        run: |
+          cd ../
+          git clone https://${{ secrets.DEPLOY_TOKEN }}@github.com/wkoziej/marmaid-test.git temp-test-repo
+          echo "✅ Test repository cloned"
+
+      - name: Deploy to test repository
+        run: |
+          cd ../temp-test-repo
+
+          # Clear existing files (except .git)
+          find . -not -path './.git*' -not -name '.' -not -name '..' -delete
+
+          # Copy build files
+          cp -r ../marmaid/dist/* .
+
+          # Create deployment info
+          echo "# Marmaid Test Environment" > README.md
+          echo "" >> README.md
+          echo "**Deployed:** $(date)" >> README.md
+          echo "**Commit:** ${{ github.sha }}" >> README.md
+          echo "**Branch:** ${{ github.ref_name }}" >> README.md
+          echo "" >> README.md
+          echo "[🚀 Production Environment](https://marmaid.pl/)" >> README.md
+
+          # Commit and push
+          git add .
+          git commit -m "🧪 Deploy test: ${{ github.sha }} - $(date '+%Y-%m-%d %H:%M:%S')"
+          git push origin main
+
+          echo "✅ Test deployment completed"
+
+      - name: Wait for GitHub Pages deployment
+        run: sleep 60
+
+      - name: Test deployment health check
+        run: |
+          URL="https://test.marmaid.pl/"
+          echo "🔍 Testing test deployment at: $URL"
+
+          # Wait for propagation and test
+          for i in {1..5}; do
+            if curl -f -s --connect-timeout 10 --max-time 30 "$URL" > /dev/null; then
+              echo "✅ Test environment is live (attempt $i)"
+              
+              # Check for expected content
+              if curl -s "$URL" | grep -q "Marmaid\|auth\|login"; then
+                echo "✅ Test environment content verified"
+                break
+              else
+                echo "⚠️  Content verification pending..."
+              fi
             else
-              echo "⚠️  Content verification pending..."
+              echo "⏳ Waiting for test environment (attempt $i/5)"
+              if [ $i -lt 5 ]; then
+                sleep 30
+              fi
             fi
-          else
-            echo "⏳ Waiting for test environment (attempt $i/5)"
-            if [ $i -lt 5 ]; then
-              sleep 30
-            fi
-          fi
-        done
+          done
 
   deploy-production:
     runs-on: ubuntu-latest
     needs: quality-gates
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    
+
     defaults:
       run:
         working-directory: .
@@ -197,114 +196,114 @@ jobs:
       url: https://marmaid.pl/
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        fetch-depth: 0
-    
-    - name: Setup Supabase CLI
-      uses: supabase/setup-cli@v1
-      with:
-        version: '2.39.2'
-    
-    - name: Apply migrations to production database
-      run: |
-        cd supabase
-        # Initialize minimal Supabase project for CI/CD (non-interactive)
-        if [ ! -f config.toml ]; then
-          supabase init --yes
-        fi
-        # Login to Supabase CLI
-        supabase login --token $SUPABASE_ACCESS_TOKEN
-        # Link project and apply all migrations
-        supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
-        supabase db push --include-all -p $SUPABASE_DB_PASSWORD
-        echo "✅ Migrations applied to production database"
-      env:
-        SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        SUPABASE_DB_PASSWORD: ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
-        SUPABASE_PROJECT_ID: ${{ secrets.PROD_SUPABASE_PROJECT_ID }}
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: package-lock.json
-    
-    - name: Install dependencies
-      run: npm install
-    
-    - name: Build for production
-      run: npm run build
-      env:
-        VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
-        VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
-        VITE_ENVIRONMENT: production
-    
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-      
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: './dist'
-        
-    - name: Deploy to GitHub Pages (Production)
-      id: deployment
-      uses: actions/deploy-pages@v4
-    
-    - name: Wait for production deployment
-      run: sleep 60
-    
-    - name: Production smoke test
-      run: |
-        URL="https://marmaid.pl/"
-        echo "🚀 Testing PRODUCTION deployment at: $URL"
-        
-        # Test if site is reachable with retries
-        for i in {1..5}; do
-          if curl -f -s --connect-timeout 10 --max-time 30 "$URL" > /dev/null; then
-            echo "✅ Production site is reachable (attempt $i)"
-            
-            # Test critical functionality - check for React app structure
-            if curl -f -s "$URL" | grep -q "<div id=\"root\">"; then
-              echo "✅ Production React app structure verified"
-              echo "🎉 Production deployment successful!"
-              break
-            else
-              echo "❌ Production app structure missing - CRITICAL"
-              exit 1
-            fi
-          else
-            echo "⏳ Waiting for production site (attempt $i/5)"
-            if [ $i -lt 5 ]; then
-              sleep 30
-            else
-              echo "❌ Production site is not reachable after 5 attempts"
-              exit 1
-            fi
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: '2.39.2'
+
+      - name: Apply migrations to production database
+        run: |
+          cd supabase
+          # Initialize minimal Supabase project for CI/CD (non-interactive)
+          if [ ! -f config.toml ]; then
+            supabase init --yes
           fi
-        done
+          # Login to Supabase CLI
+          supabase login --token $SUPABASE_ACCESS_TOKEN
+          # Link project and apply all migrations
+          supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
+          supabase db push --include-all -p $SUPABASE_DB_PASSWORD
+          echo "✅ Migrations applied to production database"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.PROD_SUPABASE_PROJECT_ID }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build for production
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          VITE_ENVIRONMENT: production
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages (Production)
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Wait for production deployment
+        run: sleep 60
+
+      - name: Production smoke test
+        run: |
+          URL="https://marmaid.pl/"
+          echo "🚀 Testing PRODUCTION deployment at: $URL"
+
+          # Test if site is reachable with retries
+          for i in {1..5}; do
+            if curl -f -s --connect-timeout 10 --max-time 30 "$URL" > /dev/null; then
+              echo "✅ Production site is reachable (attempt $i)"
+              
+              # Test critical functionality - check for React app structure
+              if curl -f -s "$URL" | grep -q "<div id=\"root\">"; then
+                echo "✅ Production React app structure verified"
+                echo "🎉 Production deployment successful!"
+                break
+              else
+                echo "❌ Production app structure missing - CRITICAL"
+                exit 1
+              fi
+            else
+              echo "⏳ Waiting for production site (attempt $i/5)"
+              if [ $i -lt 5 ]; then
+                sleep 30
+              else
+                echo "❌ Production site is not reachable after 5 attempts"
+                exit 1
+              fi
+            fi
+          done
 
   notify-deployment:
     runs-on: ubuntu-latest
     needs: [deploy-test, deploy-production]
     if: always() && (needs.deploy-test.result == 'success' || needs.deploy-production.result == 'success')
-    
+
     steps:
-    - name: Deployment notification
-      run: |
-        if [[ "${{ needs.deploy-test.result }}" == "success" ]]; then
-          echo "✅ TEST DEPLOYMENT SUCCESS"
-          echo "🧪 Test Environment: https://test.marmaid.pl/"
-        fi
-        
-        if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
-          echo "✅ PRODUCTION DEPLOYMENT SUCCESS" 
-          echo "🚀 Production Environment: https://marmaid.pl/"
-        fi
-        
-        echo ""
-        echo "📊 Health monitoring active"
-        echo "🔧 Rollback procedures available if needed"
+      - name: Deployment notification
+        run: |
+          if [[ "${{ needs.deploy-test.result }}" == "success" ]]; then
+            echo "✅ TEST DEPLOYMENT SUCCESS"
+            echo "🧪 Test Environment: https://test.marmaid.pl/"
+          fi
+
+          if [[ "${{ needs.deploy-production.result }}" == "success" ]]; then
+            echo "✅ PRODUCTION DEPLOYMENT SUCCESS" 
+            echo "🚀 Production Environment: https://marmaid.pl/"
+          fi
+
+          echo ""
+          echo "📊 Health monitoring active"
+          echo "🔧 Rollback procedures available if needed"
