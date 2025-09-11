@@ -138,6 +138,9 @@ jobs:
           # Copy build files
           cp -r ../marmaid/dist/* .
 
+          # Create CNAME file for custom domain
+          echo "test.marmaid.pl" > CNAME
+
           # Create deployment info
           echo "# Marmaid Test Environment" > README.md
           echo "" >> README.md
