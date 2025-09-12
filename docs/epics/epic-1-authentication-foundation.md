@@ -31,7 +31,6 @@ Building on the basic authentication system (Story 1.1), this epic completes the
 - **User Story:** _As a therapist_, I want to manage my professional profile and application preferences so that the system reflects my practice and therapeutic approach.
 - **Key Features:**
   - Professional profile creation (name, credentials, practice info)
-  - Therapy school preferences and default settings
   - Application UI/UX customization options
   - Account security settings and password management
 
