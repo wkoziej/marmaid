@@ -134,7 +134,9 @@ jobs:
           SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
 
       - name: Build landing page for test
-        run: npm run build
+        run: |
+          npm run build
+          touch dist/.nojekyll
         env:
           VITE_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
@@ -261,7 +263,9 @@ jobs:
         run: npm install
 
       - name: Build for production
-        run: npm run build
+        run: |
+          npm run build
+          touch dist/.nojekyll
         env:
           VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
