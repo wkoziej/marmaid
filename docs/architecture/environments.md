@@ -40,6 +40,18 @@ Use the unified CLI for all environment operations:
 ./scripts/env test           # Test environment isolation
 ```
 
+### Direct Linking Scripts
+
+For direct database linking without environment switching:
+
+```bash
+# Link directly to test database
+./scripts/link-test.sh       # Uses .env.test for credentials
+
+# Link directly to production database  
+./scripts/link-production.sh # Uses .env.production for credentials
+```
+
 ## 🚀 Deployment Workflow
 
 ### 1. Development
@@ -55,24 +67,21 @@ cd frontend && npm run dev
 ### 2. Testing
 
 ```bash
-# Switch to test environment
-./scripts/use-test.sh
+# Link to test database
+./scripts/link-test.sh
 
-# Run tests against test database
+# Run tests against test database  
 npm run test:integration
 ```
 
 ### 3. Production Deployment
 
 ```bash
-# Link to production project
-npx supabase link --project-ref aajurxtbngbixsdptfzz --password [PROD_PASSWORD]
+# Link to production database
+./scripts/link-production.sh
 
 # Push migrations to production
-npx supabase db push --password [PROD_PASSWORD]
-
-# Switch to production environment
-./scripts/use-production.sh
+npx supabase db push --yes -p "$PROD_SUPABASE_DB_PASSWORD"
 
 # Build and deploy
 npm run build
@@ -91,20 +100,20 @@ npx supabase migration new migration_name
 
 ```bash
 # Link to test project
-npx supabase link --project-ref myxicttnpflkwnofbhci --password HcBvx3GVYiRKNs5a
+./scripts/link-test.sh
 
 # Push to test
-npx supabase db push --password HcBvx3GVYiRKNs5a
+npx supabase db push --yes -p "$TEST_SUPABASE_DB_PASSWORD"
 ```
 
 ### Production Migrations
 
 ```bash
 # Link to production
-npx supabase link --project-ref aajurxtbngbixsdptfzz --password [PROD_PASSWORD]
+./scripts/link-production.sh
 
 # Push to production
-npx supabase db push --password [PROD_PASSWORD]
+npx supabase db push --yes -p "$PROD_SUPABASE_DB_PASSWORD"
 ```
 
 ## 🔍 Environment Verification
