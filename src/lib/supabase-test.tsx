@@ -13,14 +13,22 @@ export const SupabaseConnectionTest = () => {
   useEffect(() => {
     const testConnection = async () => {
       try {
-        // Test basic Supabase connection
-        const { error } = await supabase
-          .from('clients')
-          .select('count')
-          .limit(1);
+        // Test basic Supabase connection by getting current session
+        const { error } = await supabase.auth.getSession();
 
         if (error) {
           throw error;
+        }
+
+        // Also test database connection with user_profiles table
+        const { error: dbError } = await supabase
+          .from('user_profiles')
+          .select('count')
+          .limit(0);
+
+        if (dbError && dbError.code !== 'PGRST116') {
+          // PGRST116 is "no rows found" which is OK - means table exists
+          throw dbError;
         }
 
         setConnectionStatus('connected');

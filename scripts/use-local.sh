@@ -20,7 +20,7 @@ if ! curl -s http://localhost:54321/health > /dev/null; then
 fi
 
 # Create local environment configuration
-cat > frontend/.env.local << EOF
+cat > .env.local << EOF
 VITE_SUPABASE_URL=http://127.0.0.1:54321
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
 EOF
@@ -30,4 +30,4 @@ echo "📊 Project: Local Supabase"
 echo "🌐 URL: http://127.0.0.1:54321" 
 echo "🎛️  Studio: http://127.0.0.1:54323"
 echo ""
-echo "Run 'npm run dev' in frontend/ to start development server"
+echo "Run 'npm run dev' to start development server"

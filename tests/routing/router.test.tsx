@@ -111,14 +111,18 @@ describe('Router Configuration', () => {
     });
   });
 
-  it('renders navigation component on all pages', async () => {
+  it('renders navigation component with appropriate links when not authenticated', async () => {
     const router = createTestRouter(['/']);
     render(<RouterProvider router={router} />);
 
     expect(screen.getByTestId('navigation')).toBeInTheDocument();
     expect(screen.getByTestId('nav-home-link')).toBeInTheDocument();
     expect(screen.getByTestId('nav-login-link')).toBeInTheDocument();
-    expect(screen.getByTestId('nav-dashboard-link')).toBeInTheDocument();
+    expect(screen.getByTestId('nav-register-link')).toBeInTheDocument();
+
+    // Dashboard link should NOT be visible when not authenticated
+    expect(screen.queryByTestId('nav-dashboard-link')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('logout-button')).not.toBeInTheDocument();
   });
 
   it('shows loading state while checking authentication', async () => {

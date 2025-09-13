@@ -1,10 +1,18 @@
 // ABOUTME: Application layout wrapper component that provides consistent layout structure for all pages
 // ABOUTME: Uses React Router Outlet to render child routes and includes navigation and main content areas
 
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navigation } from '../components/navigation';
+import { useAuthStore } from '../lib/auth-store';
 
 export const Layout = () => {
+  const { initialize } = useAuthStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
+
   return (
     <div className='min-h-screen bg-gray-50'>
       <nav

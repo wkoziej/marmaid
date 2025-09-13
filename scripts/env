@@ -45,8 +45,8 @@ show_status() {
     echo "📊 Current Environment Status"
     echo ""
     
-    if [ -f "frontend/.env.local" ]; then
-        LOCAL_URL=$(grep "^VITE_SUPABASE_URL=" frontend/.env.local | cut -d'=' -f2 2>/dev/null || echo "Not found")
+    if [ -f ".env.local" ]; then
+        LOCAL_URL=$(grep "^VITE_SUPABASE_URL=" .env.local | cut -d'=' -f2 2>/dev/null || echo "Not found")
         echo "Frontend Environment: $LOCAL_URL"
         
         if [[ "$LOCAL_URL" == *"127.0.0.1"* ]]; then
@@ -93,7 +93,7 @@ case "${1:-}" in
     "push")
         case "${2:-}" in
             "test") 
-                DB_PASS=$(grep "^DB_PASS=" frontend/.env.test | cut -d'=' -f2)
+                DB_PASS=$(grep "^TEST_SUPABASE_DB_PASSWORD=" .env.test | cut -d'=' -f2)
                 npx supabase db push --password "$DB_PASS"
                 ;;
             "prod")

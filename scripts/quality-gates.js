@@ -185,13 +185,15 @@ async function runQualityGates(mode = 'ci') {
   results.push({ name: 'ESLint', success: lintResult.success });
   allPassed = allPassed && lintResult.success;
 
-  // 2. Prettier formatting check
-  const prettierCommand = 'npm run format:check';
+  // 2. Prettier formatting - auto-fix in pre-commit mode
+  const prettierCommand = isPreCommit
+    ? 'npm run format'
+    : 'npm run format:check';
+  const prettierDescription = isPreCommit
+    ? 'Auto-formatting code with Prettier'
+    : 'Checking code formatting with Prettier';
 
-  const prettierResult = executeCommand(
-    prettierCommand,
-    'Checking code formatting with Prettier'
-  );
+  const prettierResult = executeCommand(prettierCommand, prettierDescription);
   results.push({ name: 'Prettier', success: prettierResult.success });
   allPassed = allPassed && prettierResult.success;
 
