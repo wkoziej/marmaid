@@ -6,18 +6,18 @@ set -e
 
 echo "🔗 Linking Supabase CLI to TEST project..."
 
-# Check if .env.test exists and has DB_PASS
-if [ ! -f "frontend/.env.test" ]; then
-    echo "❌ Error: frontend/.env.test not found!"
+# Check if .env.test exists and has TEST_SUPABASE_DB_PASSWORD
+if [ ! -f ".env.test" ]; then
+    echo "❌ Error: .env.test not found!"
     exit 1
 fi
 
 # Extract password from .env.test
-DB_PASS=$(grep "^DB_PASS=" frontend/.env.test | cut -d'=' -f2)
+DB_PASS=$(grep "^TEST_SUPABASE_DB_PASSWORD=" .env.test | cut -d'=' -f2)
 
 if [ -z "$DB_PASS" ]; then
-    echo "❌ Error: DB_PASS not found in frontend/.env.test"
-    echo "Please add DB_PASS=your_password to the file"
+    echo "❌ Error: TEST_SUPABASE_DB_PASSWORD not found in .env.test"
+    echo "Please add TEST_SUPABASE_DB_PASSWORD=your_password to the file"
     exit 1
 fi
 

@@ -3,6 +3,16 @@ import { render, screen, cleanup } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 
+// Mock the SupabaseConnectionTest component to avoid async state updates
+vi.mock('./lib/supabase-test', () => ({
+  SupabaseConnectionTest: () => (
+    <div data-testid='supabase-connection-test'>
+      <h3>Supabase Connection Test</h3>
+      <p data-testid='supabase-success'>✓ Successfully connected to Supabase</p>
+    </div>
+  ),
+}));
+
 // Mock git info for tests
 declare global {
   var __GIT_INFO__: {

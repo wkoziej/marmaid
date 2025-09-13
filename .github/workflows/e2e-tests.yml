@@ -1,0 +1,110 @@
+# ABOUTME: Dedicated E2E testing pipeline for comprehensive authentication flow testing
+# ABOUTME: Can be triggered manually or on pull requests to test branches
+name: E2E Testing Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to test (chromium, firefox, webkit, all)'
+        required: false
+        default: 'chromium'
+        type: choice
+        options:
+          - chromium
+          - firefox
+          - webkit
+          - all
+  pull_request:
+    branches: [main, test]
+    paths:
+      - 'src/**'
+      - 'tests/e2e/**'
+      - 'playwright.config.ts'
+      - 'package*.json'
+
+jobs:
+  e2e-tests:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ${{ github.event.inputs.browser == 'all' && fromJson('["chromium", "firefox", "webkit"]') || fromJson(format('["{0}"]', github.event.inputs.browser || 'chromium')) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Start local Supabase
+        run: |
+          echo "🚀 Starting local Supabase..."
+          npx supabase start --ignore-health-check
+          echo "✅ Supabase started"
+        continue-on-error: true
+
+      - name: Run E2E tests
+        run: |
+          echo "🧪 Running E2E tests on ${{ matrix.browser }}"
+          npm run test:e2e -- --project=${{ matrix.browser }} --reporter=html
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+          VITE_SUPABASE_URL: http://127.0.0.1:54321
+          VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ matrix.browser }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Stop Supabase
+        run: npx supabase stop
+        if: always()
+
+  e2e-summary:
+    runs-on: ubuntu-latest
+    needs: e2e-tests
+    if: always()
+
+    steps:
+      - name: E2E Test Summary
+        run: |
+          echo "## 🧪 E2E Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Browser | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.e2e-tests.result }}" == "success" ]]; then
+            echo "| All Browsers | ✅ **PASSED** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🎉 All E2E tests passed successfully!" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.e2e-tests.result }}" == "failure" ]]; then
+            echo "| Some Browsers | ❌ **FAILED** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Some E2E tests failed. Check the individual browser results above." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| All Browsers | ⚠️ **SKIPPED** |" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ E2E tests were skipped or cancelled." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📊 **Test Artifacts:** Playwright reports are available in the Actions artifacts" >> $GITHUB_STEP_SUMMARY

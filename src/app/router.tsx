@@ -3,23 +3,21 @@
 
 import { createBrowserRouter } from 'react-router-dom';
 import { Layout } from './layout';
-import { ProtectedRoute } from '../lib/auth-guards';
+import { ProtectedRoute } from '../lib/ProtectedRoute';
+import { LoginForm } from '../features/auth/components/LoginForm';
+import { RegisterForm } from '../features/auth/components/RegisterForm';
+import { ForgotPasswordForm } from '../features/auth/components/ForgotPasswordForm';
+import { VerifyEmailPage } from '../features/auth/components/VerifyEmailPage';
 import App from '../App';
 
-// Temporary components until feature modules are implemented
-// eslint-disable-next-line react-refresh/only-export-components
-const LoginPage = () => (
-  <div data-testid='login-page'>
-    <h1>Login Page</h1>
-    <p>Login functionality will be implemented in auth feature module</p>
-  </div>
-);
-
+// Temporary Dashboard component - will be replaced by actual dashboard feature
 // eslint-disable-next-line react-refresh/only-export-components
 const Dashboard = () => (
-  <div data-testid='dashboard-page'>
-    <h1>Dashboard</h1>
-    <p>Dashboard functionality will be implemented</p>
+  <div data-testid='dashboard-page' className='p-8'>
+    <h1 className='text-2xl font-bold mb-4'>Dashboard</h1>
+    <p className='text-muted-foreground'>
+      Welcome to your therapy practice management dashboard
+    </p>
   </div>
 );
 
@@ -34,7 +32,19 @@ export const router = createBrowserRouter([
       },
       {
         path: '/login',
-        element: <LoginPage />,
+        element: <LoginForm />,
+      },
+      {
+        path: '/register',
+        element: <RegisterForm />,
+      },
+      {
+        path: '/forgot-password',
+        element: <ForgotPasswordForm />,
+      },
+      {
+        path: '/verify-email',
+        element: <VerifyEmailPage />,
       },
       {
         path: '/dashboard',

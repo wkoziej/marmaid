@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
+import path from 'path';
 
 // Get git commit info at build time
 const getGitInfo = () => {
@@ -22,6 +23,11 @@ const getGitInfo = () => {
 export default defineConfig({
   plugins: [react()],
   base: '/',
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   server: {
     historyApiFallback: true,
   },

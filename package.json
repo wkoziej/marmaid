@@ -30,11 +30,20 @@
     "db:push:prod": "supabase link --project-ref aajurxtbngbixsdptfzz && supabase db push"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.1",
+    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.57.4",
     "@types/react-router-dom": "^5.3.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.544.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.8.2"
+    "react-hook-form": "^7.62.0",
+    "react-router-dom": "^7.8.2",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.8",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

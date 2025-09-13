@@ -76,14 +76,14 @@ jobs:
             exit 1
           fi
 
-    # Skip E2E tests in CI for now due to webServer timeout issues
-    # - name: Install Playwright browsers
-    #   run: npx playwright install chromium --with-deps
-    #
-    # - name: Run E2E tests
-    #   run: npm run test:e2e
-    #   env:
-    #     PLAYWRIGHT_BASE_URL: http://localhost:3000
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests (core authentication only)
+        run: npm run test:e2e -- tests/e2e/auth-core.test.ts --project=chromium
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:5173
+        continue-on-error: true
 
   deploy-test:
     runs-on: ubuntu-latest

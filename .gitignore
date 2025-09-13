@@ -142,10 +142,16 @@ temp/
 *.old
 
 # Database exports/dumps
-*.sql
+/*.sql
+dumps/*.sql
+backup*.sql
 *.db
 *.sqlite
 *.sqlite3
+
+# Include migration files
+!supabase/migrations/*.sql
+!supabase/seed.sql
 
 # Documentation builds
 docs/_build/
