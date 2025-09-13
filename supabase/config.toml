@@ -1,0 +1,64 @@
+# ABOUTME: Minimal Supabase configuration for CI/CD workflows and local development
+# ABOUTME: Contains only essential settings that work across all environments
+
+# A string used to distinguish different Supabase projects on the same host
+project_id = "marmaid"
+
+[api]
+enabled = true
+# Schemas to expose in your API
+schemas = ["public", "graphql_public"]
+# Extra schemas to add to the search_path of every request
+extra_search_path = ["public", "extensions"]
+# The maximum number of rows returns from a view, table, or stored procedure
+max_rows = 1000
+
+[db]
+# The database major version to use. This has to be the same as your remote database's
+major_version = 17
+
+[db.migrations]
+# If disabled, migrations will be skipped during a db push or reset
+enabled = true
+# Specifies an ordered list of schema files that describe your database
+schema_paths = []
+
+[db.seed]
+# If enabled, seeds the database after migrations during a db reset
+enabled = true
+# Specifies an ordered list of seed files to load during db reset
+sql_paths = ["./seed.sql"]
+
+[auth]
+enabled = true
+# How long tokens are valid for, in seconds. Defaults to 3600 (1 hour)
+jwt_expiry = 3600
+# If disabled, the refresh token will never expire
+enable_refresh_token_rotation = true
+# Allows refresh tokens to be reused after expiry, up to the specified interval in seconds
+refresh_token_reuse_interval = 10
+# Allow/disallow new user signups to your project
+enable_signup = true
+# Allow/disallow anonymous sign-ins to your project
+enable_anonymous_sign_ins = false
+# Passwords shorter than this value will be rejected as weak. Minimum 6
+minimum_password_length = 6
+
+[auth.email]
+# Allow/disallow new user signups via email to your project
+enable_signup = true
+# If enabled, a user will be required to confirm any email change on both the old, and new email addresses
+double_confirm_changes = true
+# If enabled, users need to confirm their email address before signing in
+enable_confirmations = true
+# Number of characters used in the email OTP
+otp_length = 6
+# Number of seconds before the email OTP expires (defaults to 1 hour)
+otp_expiry = 3600
+
+[edge_runtime]
+enabled = true
+# Supported request policies: `oneshot`, `per_worker`
+policy = "per_worker"
+# The Deno major version to use
+deno_version = 2

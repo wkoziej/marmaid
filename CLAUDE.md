@@ -1,0 +1,2 @@
+- Jeżeli używasz bazy danych supabase upewnij sie że jestes w odpowiednim środowisku (./scripts/env use [env_name]) - oraz czy korzystasz z odpowiedniej bazy danych przez link
+- Jeżeli chcesz używać komendy supabase, rób to przez npx supabase

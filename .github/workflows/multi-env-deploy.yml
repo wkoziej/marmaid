@@ -124,17 +124,22 @@ jobs:
           fi
           # Login to Supabase CLI
           supabase login --token $SUPABASE_ACCESS_TOKEN
-          # Link project and apply all migrations
+          # Link project and check migration status
           supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
-          supabase db push --include-all -p $SUPABASE_DB_PASSWORD
-          echo "✅ Migrations applied to test database"
+          
+          # Apply only new/pending migrations (not --include-all)
+          echo "🔍 Applying pending migrations..."
+          supabase db push -p $SUPABASE_DB_PASSWORD
+          echo "✅ Migration check completed for test database"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: ${{ secrets.TEST_SUPABASE_PROJECT_ID }}
 
       - name: Build landing page for test
-        run: npm run build
+        run: |
+          npm run build
+          touch dist/.nojekyll
         env:
           VITE_SUPABASE_URL: ${{ vars.TEST_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
@@ -241,10 +246,13 @@ jobs:
           fi
           # Login to Supabase CLI
           supabase login --token $SUPABASE_ACCESS_TOKEN
-          # Link project and apply all migrations
+          # Link project and check migration status
           supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
-          supabase db push --include-all -p $SUPABASE_DB_PASSWORD
-          echo "✅ Migrations applied to production database"
+          
+          # Apply only new/pending migrations (not --include-all)
+          echo "🔍 Applying pending migrations..."
+          supabase db push -p $SUPABASE_DB_PASSWORD
+          echo "✅ Migration check completed for production database"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
@@ -261,7 +269,9 @@ jobs:
         run: npm install
 
       - name: Build for production
-        run: npm run build
+        run: |
+          npm run build
+          touch dist/.nojekyll
         env:
           VITE_SUPABASE_URL: ${{ vars.PROD_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
