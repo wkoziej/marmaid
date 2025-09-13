@@ -127,9 +127,9 @@ jobs:
           # Link project and check migration status
           supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
           
-          # Apply only new/pending migrations (not --include-all)
+          # Apply only new/pending migrations without interactive prompts
           echo "🔍 Applying pending migrations..."
-          supabase db push -p $SUPABASE_DB_PASSWORD
+          supabase db push --yes -p $SUPABASE_DB_PASSWORD
           echo "✅ Migration check completed for test database"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -249,9 +249,9 @@ jobs:
           # Link project and check migration status
           supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
           
-          # Apply only new/pending migrations (not --include-all)
+          # Apply only new/pending migrations without interactive prompts
           echo "🔍 Applying pending migrations..."
-          supabase db push -p $SUPABASE_DB_PASSWORD
+          supabase db push --yes -p $SUPABASE_DB_PASSWORD
           echo "✅ Migration check completed for production database"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
