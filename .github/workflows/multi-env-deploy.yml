@@ -124,10 +124,13 @@ jobs:
           fi
           # Login to Supabase CLI
           supabase login --token $SUPABASE_ACCESS_TOKEN
-          # Link project and apply all migrations
+          # Link project and check migration status
           supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
-          supabase db push --include-all -p $SUPABASE_DB_PASSWORD
-          echo "✅ Migrations applied to test database"
+          
+          # Apply only new/pending migrations (not --include-all)
+          echo "🔍 Applying pending migrations..."
+          supabase db push -p $SUPABASE_DB_PASSWORD
+          echo "✅ Migration check completed for test database"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.TEST_SUPABASE_DB_PASSWORD }}
@@ -243,10 +246,13 @@ jobs:
           fi
           # Login to Supabase CLI
           supabase login --token $SUPABASE_ACCESS_TOKEN
-          # Link project and apply all migrations
+          # Link project and check migration status
           supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
-          supabase db push --include-all -p $SUPABASE_DB_PASSWORD
-          echo "✅ Migrations applied to production database"
+          
+          # Apply only new/pending migrations (not --include-all)
+          echo "🔍 Applying pending migrations..."
+          supabase db push -p $SUPABASE_DB_PASSWORD
+          echo "✅ Migration check completed for production database"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
